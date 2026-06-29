@@ -30,8 +30,7 @@ without it, the installer downloads it.
 
 ## Build from source
 
-Prerequisites: Rust (stable, edition 2024), the Tauri CLI v2, Node + pnpm. See
-[`CLAUDE.md`](./CLAUDE.md) for the full toolchain and command reference.
+Prerequisites: Rust (stable, edition 2024), the Tauri CLI v2, and Node + pnpm.
 
 ```bash
 # build the whole workspace (core, CLI, Tauri backend)
