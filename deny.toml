@@ -1,0 +1,41 @@
+[advisories]
+version = 2
+yanked = "deny"
+# Vulnerabilities and yanked crates still hard-fail (the version = 2 defaults).
+# For *unmaintained* advisories, scope the check to crates the workspace depends
+# on directly. Tauri's large dependency tree transitively pulls in many
+# unmaintained crates we cannot fix — and several we never even compile on our
+# Windows-only target: e.g. the gtk-rs GTK3 bindings (RUSTSEC-2024-0411..0420,
+# Linux-only), the rust-unic family (RUSTSEC-2025-0098), and proc-macro-error.
+# `unmaintained = "workspace"` warns (doesn't block) on unmaintained crates: an
+# unmaintained crate kith adds *directly* still fails, while unfixable transitive
+# ones don't gate CI. (Revisit on Tauri upgrades.)
+unmaintained = "workspace"
+# ignore = []   # add specific advisory IDs here only with a written justification
+
+[licenses]
+version = 2
+confidence-threshold = 0.9
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "MPL-2.0",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Intra-workspace path deps (e.g. kith-cli -> kith-core) have no version and so
+# read as wildcards; allow them for path deps only. External wildcards still deny.
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

@@ -1,0 +1,132 @@
+---
+source: crates/kith-core/tests/walk_graph.rs
+expression: "&graph"
+---
+RelativeGraph(
+  focus: 7,
+  mode: Hourglass,
+  persons: [
+    PersonNode(
+      node: 0,
+      person: 7,
+      generation: 0,
+      display_name: "Olav Lund",
+      birth_year: Some(1850),
+      death_year: Some(1915),
+      sex: Male,
+      living: true,
+      primary_portrait: None,
+      focal: true,
+    ),
+    PersonNode(
+      node: 2,
+      person: 5,
+      generation: -1,
+      display_name: "Anders Lund",
+      birth_year: Some(1825),
+      death_year: Some(1890),
+      sex: Male,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 3,
+      person: 6,
+      generation: -1,
+      display_name: "Anna Lie",
+      birth_year: Some(1828),
+      death_year: None,
+      sex: Female,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 5,
+      person: 8,
+      generation: 0,
+      display_name: "Kari Lund",
+      birth_year: None,
+      death_year: None,
+      sex: Female,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 6,
+      person: 9,
+      generation: 1,
+      display_name: "Liv Lund",
+      birth_year: Some(1875),
+      death_year: None,
+      sex: Female,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 7,
+      person: 10,
+      generation: 1,
+      display_name: "Nils Lund",
+      birth_year: None,
+      death_year: None,
+      sex: Male,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+  ],
+  unions: [
+    UnionNode(
+      node: 1,
+      family: 3,
+      generation: -1,
+      partners: [
+        2,
+        3,
+      ],
+    ),
+    UnionNode(
+      node: 4,
+      family: 4,
+      generation: 0,
+      partners: [
+        0,
+        5,
+      ],
+    ),
+  ],
+  edges: [
+    Partner(
+      person: 2,
+      union: 1,
+    ),
+    Partner(
+      person: 3,
+      union: 1,
+    ),
+    Descent(
+      union: 1,
+      child: 0,
+    ),
+    Partner(
+      person: 0,
+      union: 4,
+    ),
+    Partner(
+      person: 5,
+      union: 4,
+    ),
+    Descent(
+      union: 4,
+      child: 6,
+    ),
+    Descent(
+      union: 4,
+      child: 7,
+    ),
+  ],
+)

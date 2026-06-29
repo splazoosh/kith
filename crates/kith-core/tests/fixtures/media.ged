@@ -1,0 +1,19 @@
+0 HEAD
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Ada /Lovelace/
+2 GIVN Ada
+2 SURN Lovelace
+1 SEX F
+1 OBJE @M1@
+0 @F1@ FAM
+1 HUSB @I1@
+1 OBJE @M2@
+0 @M1@ OBJE
+1 FILE portrait.jpg
+2 FORM jpeg
+1 TITL Ada portrait
+0 @M2@ OBJE
+1 FILE wedding.png
+2 FORM png
+0 TRLR

@@ -1,0 +1,44 @@
+0 HEAD
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Ada /Byron/
+2 GIVN Ada
+2 SURN Byron
+1 SEX F
+1 BIRT
+2 DATE 10 DEC 1815
+2 SOUR @S1@
+3 PAGE p. 42
+3 QUAY 3
+3 DATA
+4 TEXT Born in London
+1 SOUR @S2@
+2 PAGE individual-level note
+2 QUAY 2
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME George /Byron/
+2 GIVN George
+2 SURN Byron
+1 SEX M
+1 FAMS @F1@
+0 @F1@ FAM
+1 HUSB @I2@
+1 WIFE @I1@
+1 MARR
+2 DATE 1815
+1 SOUR @S1@
+2 PAGE marriage register
+2 QUAY 1
+0 @S1@ SOUR
+1 TITL London Parish Register
+1 AUTH Church of England
+1 PUBL London, 1815
+1 REPO @R1@
+1 NOTE A parish register.
+0 @S2@ SOUR
+1 TITL Birth Index
+1 REPO @R1@
+0 @R1@ REPO
+1 NAME London Metropolitan Archives
+0 TRLR

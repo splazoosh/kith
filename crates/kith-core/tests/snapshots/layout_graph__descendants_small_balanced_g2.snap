@@ -1,0 +1,156 @@
+---
+source: crates/kith-core/tests/layout_graph.rs
+expression: "&model"
+---
+LayoutModel(
+  mode: Descendants,
+  nodes: [
+    LayoutNode(
+      id: 0,
+      kind: Person,
+      entity: Person(7),
+      x: 12.0,
+      y: 0.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Olav Lund",
+        lifespan: Some("1850–1915"),
+        sex: Male,
+        living: true,
+        portrait: None,
+      )),
+      focal: true,
+    ),
+    LayoutNode(
+      id: 1,
+      kind: Person,
+      entity: Person(8),
+      x: 32.0,
+      y: 136.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Kari Lund",
+        lifespan: None,
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 2,
+      kind: Person,
+      entity: Person(9),
+      x: -110.0,
+      y: 272.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Liv Lund",
+        lifespan: Some("b. 1875"),
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 3,
+      kind: Person,
+      entity: Person(10),
+      x: 134.0,
+      y: 272.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Nils Lund",
+        lifespan: None,
+        sex: Male,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 4,
+      kind: Union,
+      entity: Union(4),
+      x: -8.0,
+      y: 136.0,
+      width: 16.0,
+      height: 16.0,
+      content: None,
+      focal: false,
+    ),
+  ],
+  links: [
+    LayoutLink(
+      from: 0,
+      to: 4,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: 12.0,
+          y: 36.0,
+        ),
+        Point(
+          x: 0.0,
+          y: 144.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 1,
+      to: 4,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: 32.0,
+          y: 172.0,
+        ),
+        Point(
+          x: 0.0,
+          y: 144.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 4,
+      to: 2,
+      kind: Descent,
+      anchors: [
+        Point(
+          x: 0.0,
+          y: 152.0,
+        ),
+        Point(
+          x: 0.0,
+          y: 272.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 4,
+      to: 3,
+      kind: Descent,
+      anchors: [
+        Point(
+          x: 8.0,
+          y: 144.0,
+        ),
+        Point(
+          x: 134.0,
+          y: 308.0,
+        ),
+      ],
+    ),
+  ],
+  bounds: Rect(
+    x: -110.0,
+    y: 0.0,
+    width: 464.0,
+    height: 344.0,
+  ),
+)

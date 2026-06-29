@@ -1,0 +1,127 @@
+/* tokens.css — the design-token seed.
+ *
+ * A warm-neutral palette with one accent, a serif-for-names / sans-for-metadata
+ * type scale, and a spacing/radii/shadow set — all as CSS custom properties so
+ * the live canvas and the HTML exporter share one vocabulary (in spirit).
+ *
+ * Theming is two-layered:
+ *   • `:root` is the light theme.
+ *   • The dark set applies BOTH automatically under `prefers-color-scheme: dark`
+ *     (unless the user forced light) AND explicitly under `[data-theme="dark"]`
+ *     that the ThemeToggle writes. `[data-theme="light"]` forces light back.
+ *
+ * Contrast: body text is `--color-ink` on `--color-paper`/`--color-surface`
+ * (very high ratio, AA-clear in both themes). The raw accent is for borders,
+ * focus rings, and large marks; text that must be tinted uses `--color-accent-text`
+ * (the lifted/darkened variant) to clear AA 4.5:1.
+ */
+
+:root {
+  /* palette — warm-neutral, one accent (light) */
+  --color-paper: #faf8f4;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3efe7;
+  --color-ink: #22201c;
+  --color-ink-soft: #5a554c;
+  --color-hairline: #e2dcd2;
+  --color-accent: #7c6f5b;
+  --color-accent-text: #5e5340; /* AA-safe accent for text on paper */
+  --color-accent-weak: #efe9dd; /* tinted fill for selected rows / badges */
+  --color-danger: #8c3b32;
+  --color-danger-weak: #f6e3df;
+
+  /* type — serif for names, grotesque/sans for UI & metadata */
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+
+  /* spacing / radii / elevation */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* motion (neutralized under prefers-reduced-motion in global.css) */
+  --motion-fast: 120ms ease;
+  --motion-base: 200ms ease;
+
+  /* canvas — the tree chart's marks. Quiet but AA-clear: the
+     link and each sex edge clear 3:1 against paper/surface; the focal ring (with
+     its heavier weight) clears it too, so the focal node reads WITHOUT color. */
+  --tree-link: #8c8576; /* low-contrast connector, ≥3:1 on paper */
+  --tree-focal: #6b5d44; /* the focal node's emphasis ring */
+  --tree-sex-male: #5b6b80; /* muted slate */
+  --tree-sex-female: #9a5c5c; /* muted rose */
+  --tree-sex-other: #8a8275; /* warm neutral */
+  --tree-sex-unknown: #8a8275;
+}
+
+/* The dark set, shared by the auto (system) and explicit (toggle) paths. */
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  /* intentionally empty: the auto path is filled by the media query below;
+     the explicit dark values live in the [data-theme="dark"] block. */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-paper: #1a1815;
+    --color-surface: #221f1b;
+    --color-surface-2: #2b271f;
+    --color-ink: #ece6da;
+    --color-ink-soft: #b7ae9d;
+    --color-hairline: #36322b;
+    --color-accent: #b79e78;
+    --color-accent-text: #c9b493;
+    --color-accent-weak: #322c22;
+    --color-danger: #e0897e;
+    --color-danger-weak: #3a2723;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+    /* canvas — lifted so the marks stay ≥3:1 against the dark paper/surface. */
+    --tree-link: #6f6a5e;
+    --tree-focal: #c9b493;
+    --tree-sex-male: #7e93ad;
+    --tree-sex-female: #bd8585;
+    --tree-sex-other: #8a8275;
+    --tree-sex-unknown: #8a8275;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-paper: #1a1815;
+  --color-surface: #221f1b;
+  --color-surface-2: #2b271f;
+  --color-ink: #ece6da;
+  --color-ink-soft: #b7ae9d;
+  --color-hairline: #36322b;
+  --color-accent: #b79e78;
+  --color-accent-text: #c9b493;
+  --color-accent-weak: #322c22;
+  --color-danger: #e0897e;
+  --color-danger-weak: #3a2723;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  /* canvas — lifted so the marks stay ≥3:1 against the dark paper/surface. */
+  --tree-link: #6f6a5e;
+  --tree-focal: #c9b493;
+  --tree-sex-male: #7e93ad;
+  --tree-sex-female: #bd8585;
+  --tree-sex-other: #8a8275;
+  --tree-sex-unknown: #8a8275;
+}

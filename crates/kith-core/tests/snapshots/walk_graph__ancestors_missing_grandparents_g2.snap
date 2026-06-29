@@ -1,0 +1,116 @@
+---
+source: crates/kith-core/tests/walk_graph.rs
+expression: "&graph"
+---
+RelativeGraph(
+  focus: 1,
+  mode: Ancestors,
+  persons: [
+    PersonNode(
+      node: 0,
+      person: 1,
+      generation: 0,
+      display_name: "Sven Holm",
+      birth_year: None,
+      death_year: None,
+      sex: Male,
+      living: true,
+      primary_portrait: None,
+      focal: true,
+    ),
+    PersonNode(
+      node: 2,
+      person: 2,
+      generation: -1,
+      display_name: "Bjorn Holm",
+      birth_year: None,
+      death_year: None,
+      sex: Male,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 3,
+      person: 3,
+      generation: -1,
+      display_name: "Greta Holm",
+      birth_year: None,
+      death_year: None,
+      sex: Female,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 5,
+      person: 4,
+      generation: -2,
+      display_name: "Old Holm",
+      birth_year: None,
+      death_year: None,
+      sex: Male,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+    PersonNode(
+      node: 6,
+      person: 5,
+      generation: -2,
+      display_name: "Olga Holm",
+      birth_year: None,
+      death_year: None,
+      sex: Female,
+      living: true,
+      primary_portrait: None,
+      focal: false,
+    ),
+  ],
+  unions: [
+    UnionNode(
+      node: 1,
+      family: 1,
+      generation: -1,
+      partners: [
+        2,
+        3,
+      ],
+    ),
+    UnionNode(
+      node: 4,
+      family: 2,
+      generation: -2,
+      partners: [
+        5,
+        6,
+      ],
+    ),
+  ],
+  edges: [
+    Partner(
+      person: 2,
+      union: 1,
+    ),
+    Partner(
+      person: 3,
+      union: 1,
+    ),
+    Descent(
+      union: 1,
+      child: 0,
+    ),
+    Partner(
+      person: 5,
+      union: 4,
+    ),
+    Partner(
+      person: 6,
+      union: 4,
+    ),
+    Descent(
+      union: 4,
+      child: 2,
+    ),
+  ],
+)

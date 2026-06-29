@@ -1,0 +1,18 @@
+0 HEAD
+1 SOUR TestSuite
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Real /Person/
+2 GIVN Real
+2 SURN Person
+1 SEX M
+0 @S1@ SOUR
+1 TITL Some Source Book
+1 REPO @R1@
+0 @O1@ OBJE
+1 FILE photo.jpg
+0 @R1@ REPO
+1 NAME Some Archive
+0 @U1@ SUBM
+1 NAME A Submitter
+0 TRLR

@@ -1,0 +1,56 @@
+[package]
+name = "kith-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+rusqlite.workspace = true
+rusqlite_migration.workspace = true
+r2d2.workspace = true
+r2d2_sqlite.workspace = true
+thiserror.workspace = true
+serde.workspace = true            # newtype/enum/record (de)serialization
+jiff.workspace = true             # civil-date → proleptic-day sort key (date module)
+
+[features]
+# A deterministic synthetic-DB generator (`synth`) for benches and the
+# large-graph invariant test. Additive and OFF in release — enabled by
+# `cargo test --all-features` (CI) and required by the `layout` bench.
+dev = []
+
+[dev-dependencies]
+tempfile.workspace = true
+proptest.workspace = true         # date parse/format round-trips + layout no-overlap nets
+serde_json.workspace = true       # assert IDs/enums serialize to the expected JSON shape
+insta = { workspace = true, features = ["ron"] }   # RelativeGraph walk snapshots
+ron.workspace = true              # LayoutModel byte-stable RON round-trip
+criterion.workspace = true        # query/layout benches over a synthetic DB
+
+# The performance baseline: query walks + all four layout modes over a synthetic
+# DB. Needs `synth`, so it is gated on the `dev` feature.
+[[bench]]
+name = "layout"
+harness = false
+required-features = ["dev"]
+
+# The rest of the bench set: search, the detail views, and GEDCOM import — the
+# remaining heavy read paths. All `dev`-gated (they need `synth`).
+[[bench]]
+name = "search"
+harness = false
+required-features = ["dev"]
+
+[[bench]]
+name = "views"
+harness = false
+required-features = ["dev"]
+
+[[bench]]
+name = "gedcom"
+harness = false
+required-features = ["dev"]
+
+[lints]
+workspace = true

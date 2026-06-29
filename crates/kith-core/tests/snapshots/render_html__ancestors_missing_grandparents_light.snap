@@ -1,0 +1,144 @@
+---
+source: crates/kith-core/tests/render_html.rs
+expression: doc
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sven Holm — Ancestors</title>
+<style>
+:root {
+  --color-paper: #faf8f4;
+  --color-surface: #ffffff;
+  --color-hairline: #e2dcd2;
+  --color-ink: #22201c;
+  --color-ink-soft: #5a554c;
+  --tree-link: #8c8576;
+  --tree-focal: #6b5d44;
+  --tree-sex-male: #5b6b80;
+  --tree-sex-female: #9a5c5c;
+  --tree-sex-other: #8a8275;
+  --tree-sex-unknown: #8a8275;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --color-paper: #1a1815;
+  --color-surface: #221f1b;
+  --color-hairline: #36322b;
+  --color-ink: #ece6da;
+  --color-ink-soft: #b7ae9d;
+  --tree-link: #6f6a5e;
+  --tree-focal: #c9b493;
+  --tree-sex-male: #7e93ad;
+  --tree-sex-female: #bd8585;
+  --tree-sex-other: #8a8275;
+  --tree-sex-unknown: #8a8275;
+  }
+}
+:root[data-theme="dark"] {
+  --color-paper: #1a1815;
+  --color-surface: #221f1b;
+  --color-hairline: #36322b;
+  --color-ink: #ece6da;
+  --color-ink-soft: #b7ae9d;
+  --tree-link: #6f6a5e;
+  --tree-focal: #c9b493;
+  --tree-sex-male: #7e93ad;
+  --tree-sex-female: #bd8585;
+  --tree-sex-other: #8a8275;
+  --tree-sex-unknown: #8a8275;
+}
+html, body { margin: 0; height: 100%; background: var(--color-paper); }
+.toolbar { position: fixed; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; font-family: var(--font-sans); }
+.toolbar button { font: inherit; padding: 0.35rem 0.7rem; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-hairline); border-radius: 8px; cursor: pointer; }
+.canvas { display: block; width: 100%; height: 100%; background: var(--color-paper); touch-action: none; }
+.card .bg { fill: var(--color-surface); stroke: var(--color-hairline); stroke-width: 1; }
+.card.focal .bg { stroke: var(--tree-focal); stroke-width: 2.5; }
+.name { font-family: var(--font-serif); font-size: 1rem; fill: var(--color-ink); }
+.lifespan { font-family: var(--font-sans); font-size: 0.8125rem; fill: var(--color-ink-soft); }
+.portrait { fill: none; stroke: var(--color-hairline); stroke-width: 1; }
+.sex-male { fill: var(--tree-sex-male); }
+.sex-female { fill: var(--tree-sex-female); }
+.sex-other, .sex-unknown { fill: var(--tree-sex-unknown); }
+.union { fill: var(--color-ink-soft); opacity: 0.6; }
+.link { stroke: var(--tree-link); stroke-width: 1.5; fill: none; }
+.link.partner { stroke-dasharray: 5 4; }
+@media print {
+  .toolbar { display: none; }
+  .root { transform: none !important; }
+  .canvas { width: 100%; height: auto; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="toolbar"><button type="button" id="theme-toggle">Theme</button><button type="button" id="fit">Fit</button></div>
+<svg class="canvas" viewBox="-158 -48 682 600" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Family tree chart"><defs><filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.18"/></filter></defs><g class="root"><path class="link partner" d="M 232 252 L 244 360" fill="none"/><path class="link partner" d="M 256 252 L 244 360" fill="none"/><path class="link descent" d="M 244 368 L 244 432" fill="none"/><path class="link partner" d="M 110 36 L 122 144" fill="none"/><path class="link partner" d="M 134 36 L 122 144" fill="none"/><path class="link descent" d="M 122 152 L 122 216" fill="none"/><g class="card focal" transform="translate(134 432)"><title>Sven Holm</title><clipPath id="card-clip-0"><rect width="220" height="72" rx="8"/></clipPath><rect class="bg" width="220" height="72" rx="8" filter="url(#card-shadow)"/><rect class="sex sex-male" width="4" height="72"/><g clip-path="url(#card-clip-0)"><text class="name" x="14" y="30">Sven Holm</text></g></g><g class="card" transform="translate(12 216)"><title>Bjorn Holm</title><clipPath id="card-clip-1"><rect width="220" height="72" rx="8"/></clipPath><rect class="bg" width="220" height="72" rx="8" filter="url(#card-shadow)"/><rect class="sex sex-male" width="4" height="72"/><g clip-path="url(#card-clip-1)"><text class="name" x="14" y="30">Bjorn Holm</text></g></g><g class="card" transform="translate(256 216)"><title>Greta Holm</title><clipPath id="card-clip-2"><rect width="220" height="72" rx="8"/></clipPath><rect class="bg" width="220" height="72" rx="8" filter="url(#card-shadow)"/><rect class="sex sex-female" width="4" height="72"/><g clip-path="url(#card-clip-2)"><text class="name" x="14" y="30">Greta Holm</text></g></g><g class="card" transform="translate(-110 0)"><title>Old Holm</title><clipPath id="card-clip-3"><rect width="220" height="72" rx="8"/></clipPath><rect class="bg" width="220" height="72" rx="8" filter="url(#card-shadow)"/><rect class="sex sex-male" width="4" height="72"/><g clip-path="url(#card-clip-3)"><text class="name" x="14" y="30">Old Holm</text></g></g><g class="card" transform="translate(134 0)"><title>Olga Holm</title><clipPath id="card-clip-4"><rect width="220" height="72" rx="8"/></clipPath><rect class="bg" width="220" height="72" rx="8" filter="url(#card-shadow)"/><rect class="sex sex-female" width="4" height="72"/><g clip-path="url(#card-clip-4)"><text class="name" x="14" y="30">Olga Holm</text></g></g><circle class="union" cx="244" cy="360" r="8"/><circle class="union" cx="122" cy="144" r="8"/></g></svg>
+<script>
+(function () {
+  var svg = document.querySelector('.canvas');
+  var g = document.querySelector('.root');
+  if (!svg || !g) return;
+  var t = { x: 0, y: 0, k: 1 };
+  function apply() {
+    g.setAttribute('transform', 'translate(' + t.x + ' ' + t.y + ') scale(' + t.k + ')');
+  }
+  function toLocal(ev) {
+    var ctm = svg.getScreenCTM();
+    if (!ctm) return { x: ev.clientX, y: ev.clientY };
+    var inv = ctm.inverse();
+    return {
+      x: ev.clientX * inv.a + ev.clientY * inv.c + inv.e,
+      y: ev.clientX * inv.b + ev.clientY * inv.d + inv.f
+    };
+  }
+  svg.addEventListener('wheel', function (ev) {
+    ev.preventDefault();
+    var p = toLocal(ev);
+    var mx = (p.x - t.x) / t.k;
+    var my = (p.y - t.y) / t.k;
+    var factor = ev.deltaY < 0 ? 1.1 : 1 / 1.1;
+    t.k = Math.max(0.1, Math.min(8, t.k * factor));
+    t.x = p.x - mx * t.k;
+    t.y = p.y - my * t.k;
+    apply();
+  }, { passive: false });
+  var dragging = false, lastX = 0, lastY = 0;
+  svg.addEventListener('pointerdown', function (ev) {
+    dragging = true;
+    lastX = ev.clientX;
+    lastY = ev.clientY;
+    if (svg.setPointerCapture) svg.setPointerCapture(ev.pointerId);
+  });
+  svg.addEventListener('pointermove', function (ev) {
+    if (!dragging) return;
+    var ctm = svg.getScreenCTM();
+    var sx = ctm ? ctm.a : 1;
+    var sy = ctm ? ctm.d : 1;
+    t.x += (ev.clientX - lastX) / sx;
+    t.y += (ev.clientY - lastY) / sy;
+    lastX = ev.clientX;
+    lastY = ev.clientY;
+    apply();
+  });
+  function endDrag() { dragging = false; }
+  svg.addEventListener('pointerup', endDrag);
+  svg.addEventListener('pointercancel', endDrag);
+  var fitBtn = document.getElementById('fit');
+  if (fitBtn) fitBtn.addEventListener('click', function () {
+    t = { x: 0, y: 0, k: 1 };
+    apply();
+  });
+  var themeBtn = document.getElementById('theme-toggle');
+  if (themeBtn) themeBtn.addEventListener('click', function () {
+    var root = document.documentElement;
+    root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+0 HEAD
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Pia /Holm/
+2 GIVN Pia
+2 SURN Holm
+1 SEX F
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Tom /Holm/
+2 GIVN Tom
+2 SURN Holm
+1 SEX M
+1 FAMC @F1@
+2 PEDI adopted
+0 @I3@ INDI
+1 NAME Eva /Holm/
+2 GIVN Eva
+2 SURN Holm
+1 SEX F
+1 FAMC @F1@
+2 PEDI foster
+0 @F1@ FAM
+1 HUSB @I1@
+1 CHIL @I2@
+1 CHIL @I3@
+0 TRLR

@@ -1,0 +1,38 @@
+[package]
+name = "kith-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false              # app binary, never released to crates.io (enables
+                             # the kith-core path dep under allow-wildcard-paths)
+
+[lib]
+name = "kith_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "kith"
+path = "src/main.rs"
+
+[features]
+# The hidden `dev seed` noun over `kith_core::synth` for manual GUI profiling.
+# OFF by default → the released `kith` binary contains neither the `dev` noun nor
+# `synth`. Build/run with `cargo run -p kith-cli --features dev`.
+dev = ["kith-core/dev"]
+
+[dependencies]
+kith-core = { path = "../kith-core" }
+clap = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+directories = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+predicates = { workspace = true }
+tempfile = { workspace = true }
+
+[lints]
+workspace = true

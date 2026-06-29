@@ -1,0 +1,14 @@
+0 HEAD
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Jane /Smith/
+2 GIVN Jane
+2 SURN Smith
+1 NAME Jane /Doe/
+2 TYPE married
+2 GIVN Jane
+2 SURN Doe
+1 NAME Sister Mary
+2 TYPE religious
+1 SEX F
+0 TRLR

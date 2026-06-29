@@ -1,0 +1,304 @@
+---
+source: crates/kith-core/tests/layout_graph.rs
+expression: "&model"
+---
+LayoutModel(
+  mode: Network,
+  nodes: [
+    LayoutNode(
+      id: 0,
+      kind: Person,
+      entity: Person(7),
+      x: -914.0,
+      y: 272.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Frida Lind",
+        lifespan: None,
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: true,
+    ),
+    LayoutNode(
+      id: 1,
+      kind: Person,
+      entity: Person(3),
+      x: -1182.0,
+      y: 136.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Anders Lind",
+        lifespan: None,
+        sex: Male,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 2,
+      kind: Person,
+      entity: Person(6),
+      x: -914.0,
+      y: 136.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Berit Fjell",
+        lifespan: None,
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 3,
+      kind: Person,
+      entity: Person(1),
+      x: -1718.0,
+      y: 0.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Arve Lind",
+        lifespan: None,
+        sex: Male,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 4,
+      kind: Person,
+      entity: Person(2),
+      x: -1450.0,
+      y: 0.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Astrid Lind",
+        lifespan: None,
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 5,
+      kind: Person,
+      entity: Person(4),
+      x: -1182.0,
+      y: 0.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Bjorn Fjell",
+        lifespan: None,
+        sex: Male,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 6,
+      kind: Person,
+      entity: Person(5),
+      x: -914.0,
+      y: 0.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Bodil Fjell",
+        lifespan: None,
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: false,
+    ),
+    LayoutNode(
+      id: 7,
+      kind: Union,
+      entity: Union(3),
+      x: -812.0,
+      y: 232.0,
+      width: 16.0,
+      height: 16.0,
+      content: None,
+      focal: false,
+    ),
+    LayoutNode(
+      id: 8,
+      kind: Union,
+      entity: Union(1),
+      x: -1080.0,
+      y: 96.0,
+      width: 16.0,
+      height: 16.0,
+      content: None,
+      focal: false,
+    ),
+    LayoutNode(
+      id: 9,
+      kind: Union,
+      entity: Union(2),
+      x: -812.0,
+      y: 96.0,
+      width: 16.0,
+      height: 16.0,
+      content: None,
+      focal: false,
+    ),
+  ],
+  links: [
+    LayoutLink(
+      from: 1,
+      to: 7,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: -962.0,
+          y: 172.0,
+        ),
+        Point(
+          x: -804.0,
+          y: 240.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 2,
+      to: 7,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: -804.0,
+          y: 208.0,
+        ),
+        Point(
+          x: -804.0,
+          y: 240.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 7,
+      to: 0,
+      kind: Descent,
+      anchors: [
+        Point(
+          x: -804.0,
+          y: 248.0,
+        ),
+        Point(
+          x: -804.0,
+          y: 272.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 3,
+      to: 8,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: -1498.0,
+          y: 36.0,
+        ),
+        Point(
+          x: -1072.0,
+          y: 104.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 4,
+      to: 8,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: -1230.0,
+          y: 36.0,
+        ),
+        Point(
+          x: -1072.0,
+          y: 104.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 8,
+      to: 1,
+      kind: Descent,
+      anchors: [
+        Point(
+          x: -1072.0,
+          y: 112.0,
+        ),
+        Point(
+          x: -1072.0,
+          y: 136.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 5,
+      to: 9,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: -962.0,
+          y: 36.0,
+        ),
+        Point(
+          x: -804.0,
+          y: 104.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 6,
+      to: 9,
+      kind: Partner,
+      anchors: [
+        Point(
+          x: -804.0,
+          y: 72.0,
+        ),
+        Point(
+          x: -804.0,
+          y: 104.0,
+        ),
+      ],
+    ),
+    LayoutLink(
+      from: 9,
+      to: 2,
+      kind: Descent,
+      anchors: [
+        Point(
+          x: -804.0,
+          y: 112.0,
+        ),
+        Point(
+          x: -804.0,
+          y: 136.0,
+        ),
+      ],
+    ),
+  ],
+  bounds: Rect(
+    x: -1718.0,
+    y: 0.0,
+    width: 1024.0,
+    height: 344.0,
+  ),
+)

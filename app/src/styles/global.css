@@ -1,0 +1,122 @@
+/* global.css — a light reset + the base element styling built on the tokens.
+ * Imported once from App.svelte. The tree's visual vocabulary is the tokens;
+ * this file just wires elements to them and honors reduced-motion.
+ */
+
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#app {
+  height: 100%;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: var(--leading-tight);
+  font-weight: 600;
+}
+
+/* Names render in the serif; a utility the row/preview components reuse. */
+.name {
+  font-family: var(--font-serif);
+}
+
+/* Base button look (the "secondary" control). Component-scoped class rules have
+ * higher specificity and override this where a component styles its own buttons;
+ * unclassed form buttons (Cancel) and `.primary` submits inherit from here. */
+button {
+  font: inherit;
+  color: var(--color-ink);
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  transition: border-color var(--motion-fast);
+}
+
+button:hover {
+  border-color: var(--color-accent);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+button.primary:hover {
+  background: var(--color-accent-text);
+  border-color: var(--color-accent-text);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* Base text-control look, on the tokens. Checkboxes/radios keep native styling. */
+input[type="text"],
+input[type="search"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+}
+
+textarea {
+  resize: vertical;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Respect the user's motion preference: neutralize every transition/animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["svelte", "vite/client", "@testing-library/jest-dom"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

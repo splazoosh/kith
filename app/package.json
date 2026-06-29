@@ -1,0 +1,36 @@
+{
+  "name": "kith-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Kith desktop frontend (Svelte + TS + Vite).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "d3-selection": "^3.0.0",
+    "d3-transition": "^3.0.1",
+    "d3-zoom": "^3.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5",
+    "@tauri-apps/cli": "^2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.6",
+    "@types/d3-selection": "^3.0.11",
+    "@types/d3-transition": "^3.0.9",
+    "@types/d3-zoom": "^3.0.8",
+    "jsdom": "^25.0.1",
+    "svelte": "^5",
+    "svelte-check": "^4",
+    "typescript": "^5",
+    "vite": "^6",
+    "vitest": "^3"
+  }
+}

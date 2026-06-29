@@ -1,0 +1,72 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/kith-core",
+    "crates/kith-cli",
+    "crates/kith-tauri",
+]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+authors = ["Kith contributors"]
+
+# Single source of truth for dependency versions across the workspace. Unused
+# entries do not enter the build graph.
+[workspace.dependencies]
+rusqlite = { version = "0.39", features = ["bundled"] }
+rusqlite_migration = "2.5"
+r2d2 = "0.8"
+r2d2_sqlite = "0.34"
+thiserror = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jiff = { version = "0.2", default-features = false, features = ["std"] }
+anyhow = "1.0"
+clap = { version = "4", features = ["derive"] }
+directories = "6"     # per-user data dir for the default --db (kith-cli)
+tempfile = "3"
+proptest = "1.11"
+insta = "1.48"
+ron = "0.12"          # (dev) byte-stable RON round-trip of the layout model (already in-tree via insta's ron feature)
+assert_cmd = "2"      # (dev) black-box binary invocation (kith-cli tests)
+predicates = "3"      # (dev) stdout/stderr/exit-code assertions (kith-cli tests)
+criterion = { version = "0.5", features = ["html_reports"] }   # (dev) query/layout benches over a synthetic DB
+
+# Tauri 2 desktop shell (kith-tauri only; never kith-core). Major-pinned —
+# Cargo.lock holds the exact resolve. `protocol-asset` powers the live-canvas
+# portrait stream (`convertFileSrc`), scoped to the open DB's media folder at
+# runtime.
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-build = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+
+[workspace.lints.rust]
+unsafe_code = "deny"        # core has no unsafe; deny (not forbid) so kith-tauri can override if ever needed
+missing_docs = "warn"
+unexpected_cfgs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+correctness = { level = "deny", priority = 0 }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# Benches build on the release optimizations but keep debug symbols (for a
+# profiler) and the binary unstripped. The release
+# `panic = "abort"` is ignored for benchmark targets, which always build with
+# unwinding, so `criterion` works under this profile.
+[profile.bench]
+inherits = "release"
+debug = true
+strip = false
+
+[profile.dev.package."*"]
+opt-level = 3               # optimize deps once (matters once bundled SQLite lands)

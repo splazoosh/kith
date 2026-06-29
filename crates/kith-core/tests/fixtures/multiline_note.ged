@@ -1,0 +1,11 @@
+0 HEAD
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Anna /Lund/
+2 GIVN Anna
+2 SURN Lund
+1 SEX F
+1 NOTE This is a long biographical note that
+2 CONC  continues on the same logical line
+2 CONT and then wraps onto a second line.
+0 TRLR

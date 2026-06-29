@@ -1,0 +1,33 @@
+---
+source: crates/kith-core/tests/layout_graph.rs
+expression: "&model"
+---
+LayoutModel(
+  mode: Descendants,
+  nodes: [
+    LayoutNode(
+      id: 0,
+      kind: Person,
+      entity: Person(1),
+      x: -110.0,
+      y: 0.0,
+      width: 220.0,
+      height: 72.0,
+      content: Some(NodeContent(
+        display_name: "Hilda Alone",
+        lifespan: None,
+        sex: Female,
+        living: true,
+        portrait: None,
+      )),
+      focal: true,
+    ),
+  ],
+  links: [],
+  bounds: Rect(
+    x: -110.0,
+    y: 0.0,
+    width: 220.0,
+    height: 72.0,
+  ),
+)

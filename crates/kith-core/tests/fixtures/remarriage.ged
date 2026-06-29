@@ -1,0 +1,46 @@
+0 HEAD
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Henrik /Sand/
+2 GIVN Henrik
+2 SURN Sand
+1 SEX M
+1 FAMS @F1@
+1 FAMS @F2@
+0 @I2@ INDI
+1 NAME Ingrid /Sand/
+2 GIVN Ingrid
+2 SURN Sand
+1 SEX F
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Johanna /Sand/
+2 GIVN Johanna
+2 SURN Sand
+1 SEX F
+1 FAMS @F2@
+0 @I4@ INDI
+1 NAME Arne /Sand/
+2 GIVN Arne
+2 SURN Sand
+1 SEX M
+1 FAMC @F1@
+0 @I5@ INDI
+1 NAME Carl /Sand/
+2 GIVN Carl
+2 SURN Sand
+1 SEX M
+1 FAMC @F2@
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I4@
+1 MARR
+2 DATE 1870
+0 @F2@ FAM
+1 HUSB @I1@
+1 WIFE @I3@
+1 CHIL @I5@
+1 MARR
+2 DATE 1885
+0 TRLR
