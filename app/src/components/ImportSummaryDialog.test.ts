@@ -1,25 +1,25 @@
-// ImportSummaryDialog.test.ts — jsdom tests for the GEDCOM import surface.
+// ImportSummaryDialog.test.ts — jsdom tests for the import surface (GEDCOM + LB).
 // Two halves:
 //   (1) the ImportSummaryDialog component — renders the counts, shows the
 //       "Skipped … SOUR×2" line only when skipped_tags is non-empty, and closes on
 //       Done / Esc;
-//   (2) the dbActions.importGedcom flow (new-tree model) — open() picks the .ged,
-//       save() picks the new .db, api.importGedcom creates+opens it, db.adopt switches
-//       to it, and the summary is surfaced via the importSummary store; either cancel
-//       is a silent no-op; a failure toasts and leaves the open DB untouched.
-// The engine's actual records are the Rust round-trip suite's job; this asserts
-// the FLOW (which fn, which args) and the dialog's render, not GEDCOM output.
+//   (2) the dbActions import flows (new-tree model) — open() picks the source file,
+//       save() picks the new .db, api.import{Gedcom,Lb} creates+opens it, db.adopt
+//       switches to it, and the summary is surfaced via the importSummary store; either
+//       cancel is a silent no-op; a failure toasts and leaves the open DB untouched.
+// The engines' actual records are the Rust suites' job; this asserts the FLOW (which
+// fn, which args) and the dialog's render, not import output.
 
 import { fireEvent, render } from "@testing-library/svelte";
 import { beforeEach, expect, test, vi } from "vitest";
 
 const { open, save } = vi.hoisted(() => ({ open: vi.fn(), save: vi.fn() }));
 vi.mock("@tauri-apps/plugin-dialog", () => ({ open, save }));
-vi.mock("../lib/api", () => ({ importGedcom: vi.fn() }));
+vi.mock("../lib/api", () => ({ importGedcom: vi.fn(), importLb: vi.fn() }));
 vi.mock("../lib/stores/db.svelte", () => ({ db: { adopt: vi.fn() } }));
 
 import * as api from "../lib/api";
-import { importGedcom } from "../lib/dbActions";
+import { importGedcom, importLb } from "../lib/dbActions";
 import { CommandError } from "../lib/errors";
 import { db } from "../lib/stores/db.svelte";
 import { importSummary } from "../lib/stores/importSummary.svelte";
@@ -28,6 +28,7 @@ import type { ImportSummary } from "../lib/types";
 import ImportSummaryDialog from "./ImportSummaryDialog.svelte";
 
 const apiImport = vi.mocked(api.importGedcom);
+const apiImportLb = vi.mocked(api.importLb);
 const adopt = vi.mocked(db.adopt);
 
 const SUMMARY: ImportSummary = {
@@ -44,6 +45,7 @@ beforeEach(() => {
   open.mockReset();
   save.mockReset();
   apiImport.mockReset();
+  apiImportLb.mockReset();
   adopt.mockReset();
   toast.items = [];
   importSummary.clear();
@@ -159,4 +161,33 @@ test("a failed import toasts the error and leaves the open DB untouched", async 
     message: "line 12: invalid level",
     sticky: true,
   });
+});
+
+// — (3) the dbActions.importLb flow — the same new-tree machinery, over the LB engine —
+
+test("importLb imports into a new tree: picks json + db, opens it, surfaces the summary", async () => {
+  open.mockResolvedValue("C:/in/people.json");
+  save.mockResolvedValue("C:/out/people.db");
+  apiImportLb.mockResolvedValue({ db: RESULT.db, summary: SUMMARY });
+
+  const result = await importLb();
+
+  expect(apiImportLb).toHaveBeenCalledWith("C:/in/people.json", "C:/out/people.db");
+  // Seeds the destination from the chosen file's basename (people.json → people.db).
+  expect(save).toHaveBeenCalledWith(
+    expect.objectContaining({ defaultPath: "people.db" }),
+  );
+  expect(adopt).toHaveBeenCalledWith(RESULT.db);
+  expect(importSummary.current).toEqual(SUMMARY);
+  expect(result).toEqual(SUMMARY);
+});
+
+test("importLb cancelling the file picker returns null without importing", async () => {
+  open.mockResolvedValue(null);
+
+  const result = await importLb();
+
+  expect(save).not.toHaveBeenCalled();
+  expect(apiImportLb).not.toHaveBeenCalled();
+  expect(result).toBeNull();
 });

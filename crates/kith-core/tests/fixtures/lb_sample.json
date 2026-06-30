@@ -1,0 +1,10 @@
+[
+  {"Id":1,"MotherId":0,"FatherId":0,"SpouseId":0,"SpouseList":null,"Gender":"M","FirstName":"Hans","LastName":"Olsen","BirthPlace":"Bergen","DeathPlace":"Bergen","BirthDate":"12.05.1820","DeathDate":"03.04.1890","Notes":"Patriark.","Children":null,"ImageFile":null,"Address":"","Phone":"","Email":""},
+  {"Id":2,"MotherId":0,"FatherId":0,"SpouseId":0,"SpouseList":null,"Gender":"F","FirstName":"Marta","LastName":"Nilsdatter","BirthPlace":"","DeathPlace":"","BirthDate":"01.01.1753","DeathDate":"01.01.1753","Notes":"Ukjent fødsel og død."},
+  {"Id":3,"MotherId":2,"FatherId":1,"SpouseId":0,"SpouseList":null,"Gender":"F","FirstName":"Anne","LastName":"Hansdatter","BirthPlace":"Bergen","DeathPlace":"","BirthDate":"07.07.1850","DeathDate":"01.01.1753","Notes":""},
+  {"Id":4,"MotherId":2,"FatherId":1,"SpouseId":0,"SpouseList":null,"Gender":"M","FirstName":"Ole","LastName":"Hansen","BirthPlace":"","DeathPlace":"","BirthDate":"01.01.1753","DeathDate":"01.01.1753","Notes":""},
+  {"Id":5,"MotherId":0,"FatherId":1,"SpouseId":0,"SpouseList":null,"Gender":"M","FirstName":"Lars","LastName":"Hansen","BirthPlace":"","DeathPlace":"","BirthDate":"01.01.1753","DeathDate":"01.01.1753","Notes":"Kjent far, ukjent mor."},
+  {"Id":6,"MotherId":0,"FatherId":0,"SpouseId":7,"SpouseList":null,"Gender":"M","FirstName":"Per","LastName":"Andersen","BirthPlace":"","DeathPlace":"","BirthDate":"01.01.1753","DeathDate":"01.01.1753","Notes":""},
+  {"Id":7,"MotherId":0,"FatherId":0,"SpouseId":6,"SpouseList":null,"Gender":"F","FirstName":"Kari","LastName":"Persdatter","BirthPlace":"","DeathPlace":"","BirthDate":"01.01.1753","DeathDate":"01.01.1753","Notes":""},
+  {"Id":8,"MotherId":0,"FatherId":0,"SpouseId":0,"SpouseList":null,"Gender":"F","FirstName":"Olea","LastName":"Alfsdatter","BirthPlace":"Oslo","DeathPlace":"","BirthDate":"01.01.1753","DeathDate":"01.01.1753","Notes":"Kun fødested kjent."}
+]

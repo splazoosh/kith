@@ -1,27 +1,22 @@
 <script lang="ts">
-  // DatabaseBar — the persistent header: the open path + schema version, and the
-  // Open / Create / Close lifecycle. The dialog plugin (via dbActions) only
-  // returns a path string; all filesystem IO is the Rust command's (least
-  // privilege). The only place the theme toggle and the dialogs are reached.
+  // DatabaseBar — the persistent header: the open path + schema version, the view
+  // switch + Search, and the consolidated File menu (Open / Create / Import / Export /
+  // Close). The file/interchange actions live in FileMenu to keep the bar uncluttered;
+  // the frequently-used controls (view switch, Search, About, theme) stay one click
+  // away here. All filesystem IO is the Rust command's (least privilege).
 
-  import { importGedcom, pickAndCreate, pickAndOpen } from "../lib/dbActions";
-  import { exportGedcom } from "../lib/exportActions";
   import { about } from "../lib/stores/about.svelte";
   import { db } from "../lib/stores/db.svelte";
   import { importSummary } from "../lib/stores/importSummary.svelte";
   import { searchPalette } from "../lib/stores/search.svelte";
   import { ui } from "../lib/stores/ui.svelte";
+  import FileMenu from "./FileMenu.svelte";
   import ImportSummaryDialog from "./ImportSummaryDialog.svelte";
   import ThemeToggle from "./ThemeToggle.svelte";
 
   function basename(path: string): string {
     const parts = path.split(/[/\\]/);
     return parts[parts.length - 1] || path;
-  }
-
-  // Seed the export filename from the open DB's name (sans extension); fallback "tree".
-  function exportName(): string {
-    return db.current ? basename(db.current.path).replace(/\.[^.]+$/, "") : "tree";
   }
 </script>
 
@@ -70,16 +65,9 @@
            if it's open). Also opens via Ctrl/Cmd+K (the shortcut registry). -->
       <button type="button" onclick={() => searchPalette.open()}>Search…</button>
     {/if}
-    <button type="button" onclick={pickAndOpen}>Open…</button>
-    <button type="button" onclick={pickAndCreate}>Create…</button>
-    <!-- Import is available with or without a DB open — it always makes a new tree. -->
-    <button type="button" onclick={() => importGedcom()}>Import GEDCOM…</button>
-    {#if db.current}
-      <button type="button" onclick={() => exportGedcom(exportName())}>
-        Export GEDCOM…
-      </button>
-      <button type="button" onclick={() => db.close()}>Close</button>
-    {/if}
+    <!-- The consolidated file/interchange menu: Open / Create / Import GEDCOM /
+         Import LB / Export GEDCOM / Close. Available with or without a DB open. -->
+    <FileMenu />
     <!-- About / help — always reachable (product identity, version, shortcuts). -->
     <button type="button" onclick={() => about.open()}>About</button>
     <ThemeToggle />

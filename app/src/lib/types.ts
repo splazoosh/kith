@@ -336,6 +336,15 @@ export interface GedcomImport {
   summary: ImportSummary;
 }
 
+// The outcome of a fresh-tree "LB" JSON import (kith-tauri's LbImport) — the same
+// shape as GedcomImport (a new DB + the shared ImportSummary). Like the GEDCOM
+// import, it always makes a NEW tree. LB carries no alternate names / media /
+// sources, so those summary counts stay 0.
+export interface LbImport {
+  db: DbInfo;
+  summary: ImportSummary;
+}
+
 // — layout model (kith_core::layout; the positioned chart the canvas renders) —
 export type ChartMode = "Ancestors" | "Descendants" | "Hourglass" | "Network"; // Network: whole-graph layered layout; ignores depth
 

@@ -21,8 +21,9 @@ test("the no-database welcome shows the Kith wordmark and the privacy promise", 
   expect(getByText("Kith")).toBeTruthy();
   expect(getByText(/no account, no server, no telemetry/i)).toBeTruthy();
 
-  // The create / open / import affordances remain.
+  // The create / open / import affordances remain (GEDCOM and LB both start a tree).
   expect(getByText("Create database…")).toBeTruthy();
   expect(getByText("Open database…")).toBeTruthy();
   expect(getByText("Import GEDCOM…")).toBeTruthy();
+  expect(getByText("Import LB…")).toBeTruthy();
 });

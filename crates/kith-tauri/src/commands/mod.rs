@@ -17,6 +17,7 @@ pub mod export;
 pub mod family;
 pub mod gedcom;
 pub mod layout;
+pub mod lb;
 pub mod media;
 pub mod name;
 pub mod person;

@@ -10,7 +10,7 @@ import { asCommandError } from "./errors";
 import { db } from "./stores/db.svelte";
 import { importSummary } from "./stores/importSummary.svelte";
 import { toast } from "./stores/toast.svelte";
-import type { ImportSummary } from "./types";
+import type { DbInfo, ImportSummary } from "./types";
 
 const FILTERS = [
   { name: "Kith database", extensions: ["db", "sqlite", "kith"] },
@@ -18,11 +18,45 @@ const FILTERS = [
 
 const GEDCOM_FILTERS = [{ name: "GEDCOM", extensions: ["ged", "gedcom"] }];
 
-/** Suggest a database filename from the chosen GEDCOM's basename (`tree.ged` → `tree.db`). */
-function defaultDbName(gedPath: string): string {
-  const base = gedPath.split(/[/\\]/).pop() ?? "tree";
+const LB_FILTERS = [{ name: "LB export (JSON)", extensions: ["json"] }];
+
+/** Suggest a database filename from a source file's basename (`tree.ged` → `tree.db`). */
+function defaultDbName(sourcePath: string): string {
+  const base = sourcePath.split(/[/\\]/).pop() ?? "tree";
   const stem = base.replace(/\.[^.]+$/, "") || "tree";
   return `${stem}.db`;
+}
+
+/** The shape of a fresh-tree import command (GEDCOM or LB): a new DB + the summary. */
+type NewTreeImport = (
+  filePath: string,
+  dbPath: string,
+) => Promise<{ db: DbInfo; summary: ImportSummary }>;
+
+/** The shared back half of a new-tree import: pick a destination `.db` (seeded from
+ *  `filePath`'s basename), run the backend `importer`, adopt the freshly opened tree,
+ *  and surface its summary through the persistent dialog. Returns the summary, `null`
+ *  on a cancelled destination picker, or `null` after toasting a failure (which leaves
+ *  the open database untouched — the backend attaches only on success). */
+async function importIntoNewTree(
+  filePath: string,
+  importer: NewTreeImport,
+): Promise<ImportSummary | null> {
+  const dbPath = await saveDialog({
+    defaultPath: defaultDbName(filePath),
+    filters: FILTERS,
+  });
+  if (!dbPath) return null; // cancelled the destination picker
+
+  try {
+    const { db: info, summary } = await importer(filePath, dbPath);
+    await db.adopt(info); // the backend created + opened the new tree
+    importSummary.show(summary); // surface it through the persistent dialog
+    return summary;
+  } catch (e) {
+    toast.pushError(asCommandError(e));
+    return null;
+  }
 }
 
 /** Pick an existing database via the native open dialog, then open it. */
@@ -55,20 +89,20 @@ export async function importGedcom(): Promise<ImportSummary | null> {
     filters: GEDCOM_FILTERS,
   });
   if (typeof filePath !== "string") return null; // cancelled the file picker
+  return importIntoNewTree(filePath, api.importGedcom);
+}
 
-  const dbPath = await saveDialog({
-    defaultPath: defaultDbName(filePath),
-    filters: FILTERS,
+/** Import an "LB" JSON export into a NEW tree — the same fresh-tree flow as
+ *  {@link importGedcom} (pick the `.json`, then a destination `.db`; the Rust command
+ *  creates + imports + opens it). Reachable with or without a database open; a
+ *  cancelled dialog is a silent no-op and a failure toasts and leaves the open
+ *  database untouched. Returns the summary (or `null` on cancel/failure). */
+export async function importLb(): Promise<ImportSummary | null> {
+  const filePath = await openDialog({
+    multiple: false,
+    directory: false,
+    filters: LB_FILTERS,
   });
-  if (!dbPath) return null; // cancelled the destination picker
-
-  try {
-    const { db: info, summary } = await api.importGedcom(filePath, dbPath);
-    await db.adopt(info); // the backend created + opened the new tree
-    importSummary.show(summary); // surface it through the persistent dialog
-    return summary;
-  } catch (e) {
-    toast.pushError(asCommandError(e));
-    return null;
-  }
+  if (typeof filePath !== "string") return null; // cancelled the file picker
+  return importIntoNewTree(filePath, api.importLb);
 }

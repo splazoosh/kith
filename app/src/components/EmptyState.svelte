@@ -4,7 +4,12 @@
   // the tree view with no root chosen yet (embed the PersonPicker so a person can
   // be picked without bouncing back to the Library).
 
-  import { importGedcom, pickAndCreate, pickAndOpen } from "../lib/dbActions";
+  import {
+    importGedcom,
+    importLb,
+    pickAndCreate,
+    pickAndOpen,
+  } from "../lib/dbActions";
   import { chart } from "../lib/stores/chart.svelte";
   import { selection } from "../lib/stores/selection.svelte";
   import PersonPicker from "./PersonPicker.svelte";
@@ -20,8 +25,8 @@
     <p class="wordmark">Kith</p>
     <h2>No database open</h2>
     <p>
-      Open an existing Kith database, create a new one, or import a GEDCOM to start a
-      new tree.
+      Open an existing Kith database, create a new one, or import a GEDCOM or LB
+      export to start a new tree.
     </p>
     <p class="privacy">
       Your family tree stays on this machine — no account, no server, no telemetry.
@@ -32,6 +37,7 @@
       </button>
       <button type="button" onclick={pickAndOpen}>Open database…</button>
       <button type="button" onclick={() => importGedcom()}>Import GEDCOM…</button>
+      <button type="button" onclick={() => importLb()}>Import LB…</button>
     </div>
   {:else if mode === "no-people"}
     <h2>No people yet</h2>

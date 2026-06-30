@@ -184,6 +184,28 @@ test("importGedcom passes filePath + dbPath and returns the GedcomImport", async
   });
 });
 
+test("importLb passes filePath + dbPath and returns the LbImport", async () => {
+  const result = {
+    db: { path: "C:/out/people.db", schema_version: 2 },
+    summary: {
+      individuals: 8,
+      families: 3,
+      events: 4,
+      names: 0,
+      places: 2,
+      skipped_tags: {},
+    },
+  };
+  invoke.mockResolvedValue(result);
+  await expect(
+    api.importLb("C:/in/people.json", "C:/out/people.db"),
+  ).resolves.toEqual(result);
+  expect(invoke).toHaveBeenCalledWith("import_lb", {
+    filePath: "C:/in/people.json",
+    dbPath: "C:/out/people.db",
+  });
+});
+
 test("mediaImport passes the subject, path, and isPrimary (camelCase keys)", async () => {
   invoke.mockResolvedValue({ media: { id: 1, path: "1.png" }, is_primary: true });
   await api.mediaImport({ Individual: 7 }, "C:/pics/face.png", true);

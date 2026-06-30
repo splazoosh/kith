@@ -84,6 +84,7 @@ pub fn run() {
             commands::export::export_html,
             commands::gedcom::export_gedcom,
             commands::gedcom::import_gedcom,
+            commands::lb::import_lb,
             commands::media::media_import,
             commands::media::media_for,
             commands::media::media_paths,

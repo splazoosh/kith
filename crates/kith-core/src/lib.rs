@@ -10,6 +10,7 @@ pub mod db;
 pub mod error;
 pub mod gedcom;
 pub mod layout;
+pub mod lb;
 pub mod model;
 pub mod prelude;
 pub mod query;

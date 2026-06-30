@@ -12,6 +12,7 @@ r2d2.workspace = true
 r2d2_sqlite.workspace = true
 thiserror.workspace = true
 serde.workspace = true            # newtype/enum/record (de)serialization
+serde_json.workspace = true       # parse the "LB" JSON interchange (lb module)
 jiff.workspace = true             # civil-date → proleptic-day sort key (date module)
 
 [features]
@@ -23,7 +24,6 @@ dev = []
 [dev-dependencies]
 tempfile.workspace = true
 proptest.workspace = true         # date parse/format round-trips + layout no-overlap nets
-serde_json.workspace = true       # assert IDs/enums serialize to the expected JSON shape
 insta = { workspace = true, features = ["ron"] }   # RelativeGraph walk snapshots
 ron.workspace = true              # LayoutModel byte-stable RON round-trip
 criterion.workspace = true        # query/layout benches over a synthetic DB

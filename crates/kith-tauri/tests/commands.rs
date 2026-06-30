@@ -13,7 +13,7 @@ use kith_core::prelude::{
 use kith_tauri_lib::commands::date::parse_date;
 use kith_tauri_lib::commands::dto::NewEventRequest;
 use kith_tauri_lib::commands::{
-    db, event, export, family, gedcom, layout, name, person, source, undo,
+    db, event, export, family, gedcom, layout, lb, name, person, source, undo,
 };
 use kith_tauri_lib::error::ErrorKind;
 use kith_tauri_lib::state::AppState;
@@ -650,6 +650,98 @@ async fn import_gedcom_missing_file_is_io() {
         &state,
         dir.path(),
         dir.path().join("nope.ged").display().to_string(),
+        dir.path().join("x.db"),
+    )
+    .await
+    .expect_err("missing");
+    assert_eq!(err.kind, ErrorKind::Io);
+}
+
+// — "LB" JSON import: the thin new-tree command over kith_core::lb. Mirrors the
+//   GEDCOM import surface (the engine's mapping is the core crate's lb.rs suite). —
+
+/// A minimal LB document: one person with a real birth date (`DD.MM.YYYY`).
+const LB_DOC: &str =
+    r#"[{"Id":1,"Gender":"M","FirstName":"Ada","LastName":"Lovelace","BirthDate":"10.12.1815"}]"#;
+
+#[tokio::test]
+async fn import_lb_creates_a_fresh_tree_and_opens_it() {
+    // No database open — the new-tree import must still work and become the open one.
+    let state = AppState::default();
+    let dir = tempfile::tempdir().expect("temp dir");
+    let json = dir.path().join("people.json");
+    std::fs::write(&json, LB_DOC).expect("write fixture");
+    let new_db = dir.path().join("imported.db");
+
+    let result = lb::import_lb_impl(
+        &state,
+        dir.path(),
+        json.display().to_string(),
+        new_db.clone(),
+    )
+    .await
+    .expect("import");
+    assert_eq!(result.summary.individuals, 1);
+    assert_eq!(result.summary.events, 1); // the birth
+    assert_eq!(result.db.path, new_db);
+
+    // The freshly imported database is now the open one and holds the person.
+    let current = db::db_current_impl(&state)
+        .expect("current")
+        .expect("a database is open after import");
+    assert_eq!(current.path, new_db);
+    assert_eq!(
+        person::person_list_impl(&state).await.expect("list").len(),
+        1
+    );
+}
+
+#[tokio::test]
+async fn import_lb_malformed_is_validation_and_opens_nothing() {
+    let state = AppState::default();
+    let dir = tempfile::tempdir().expect("temp dir");
+    let bad = dir.path().join("bad.json");
+    std::fs::write(&bad, "{ not json").expect("write fixture");
+
+    let err = lb::import_lb_impl(
+        &state,
+        dir.path(),
+        bad.display().to_string(),
+        dir.path().join("bad.db"),
+    )
+    .await
+    .expect_err("malformed");
+    assert_eq!(err.kind, ErrorKind::Validation); // from the engine
+    // Attached only on success: a malformed file opens nothing.
+    assert!(db::db_current_impl(&state).expect("current").is_none());
+}
+
+#[tokio::test]
+async fn import_lb_non_utf8_is_validation_and_creates_no_database() {
+    // A non-UTF-8 file is a Validation the user fixes by re-exporting, not the Io
+    // `read_to_string` would give — decoded BEFORE the database is created.
+    let state = AppState::default();
+    let dir = tempfile::tempdir().expect("temp dir");
+    let f = dir.path().join("latin1.json");
+    std::fs::write(&f, [0xff, 0xfe, 0x00, 0x41]).expect("write fixture"); // not valid UTF-8
+    let new_db = dir.path().join("x.db");
+
+    let err = lb::import_lb_impl(&state, dir.path(), f.display().to_string(), new_db.clone())
+        .await
+        .expect_err("non-utf8");
+    assert_eq!(err.kind, ErrorKind::Validation);
+    assert!(!new_db.exists(), "no database created on a decode failure");
+    assert!(db::db_current_impl(&state).expect("current").is_none());
+}
+
+#[tokio::test]
+async fn import_lb_missing_file_is_io() {
+    let state = AppState::default();
+    let dir = tempfile::tempdir().expect("temp dir");
+    let err = lb::import_lb_impl(
+        &state,
+        dir.path(),
+        dir.path().join("nope.json").display().to_string(),
         dir.path().join("x.db"),
     )
     .await

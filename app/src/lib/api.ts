@@ -29,6 +29,7 @@ import type {
   GedcomImport,
   Individual,
   LayoutModel,
+  LbImport,
   MediaId,
   MediaItem,
   MediaSubject,
@@ -163,6 +164,13 @@ export const exportGedcom = (outPath: string) =>
  *  GEDCOM, creates the database, and attaches it (both dialogs supplied the paths). */
 export const importGedcom = (filePath: string, dbPath: string) =>
   call<GedcomImport>("import_gedcom", { filePath, dbPath });
+
+/** Import an "LB" JSON file into a NEW database at `dbPath` and open it, returning
+ *  the new DbInfo + the summary. Mirrors `importGedcom` (a fresh-tree import); the
+ *  Rust command reads the JSON, creates the database, and attaches it (both dialogs
+ *  supplied the paths). */
+export const importLb = (filePath: string, dbPath: string) =>
+  call<LbImport>("import_lb", { filePath, dbPath });
 
 // — media / portraits: the GUI surface over kith_core::db media CRUD.
 //   `media_import` copies the picked file (the open dialog supplied `filePath`);
