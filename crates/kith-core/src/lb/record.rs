@@ -128,6 +128,13 @@ pub(super) fn non_empty(s: &str) -> Option<String> {
 /// A `00` month or day is treated as *unknown*, yielding a partial date
 /// (year-only, or year + month), since a day is only meaningful with a month —
 /// mirroring [`crate::date`]'s own partial-date rule.
+///
+/// A bare `01.01.YYYY` is likewise folded to a **year-only** date: LB has no
+/// "year only" encoding and pads an unknown day/month to New Year's Day, so a
+/// literal 1 January is overwhelmingly that pad, not a real event. A genuine 1
+/// January cannot be told apart in the source and is the rare loss; the raw
+/// string still survives in the person's notes. Only `01.01` folds — `02.01` or
+/// `01.03` keep full precision.
 pub(super) fn parse_lb_date(raw: &str, current_year: i32) -> Option<GenealogicalDate> {
     let s = raw.trim();
     if s.is_empty() || UNKNOWN_DATES.contains(&s) {
@@ -149,7 +156,17 @@ pub(super) fn parse_lb_date(raw: &str, current_year: i32) -> Option<Genealogical
     if year > current_year {
         return None; // a future date — a placeholder, not a real event
     }
-    let month = (1..=12).contains(&month_n).then_some(month_n);
+    let month = if day_n == 1 && month_n == 1 {
+        // LB has no "year only" encoding: a date whose day/month is unknown is
+        // padded to `01.01.YYYY` (New Year's Day). A bare 1 January is therefore
+        // overwhelmingly that year-only pad, not a real New Year's Day event, so
+        // it folds to a year-only partial date rather than invent day-level
+        // precision. A genuine 1 January is indistinguishable in the source and
+        // is the rare case; the raw string still survives in the person's notes.
+        None
+    } else {
+        (1..=12).contains(&month_n).then_some(month_n)
+    };
     // A day is only meaningful alongside a month (drop it otherwise).
     let day = match month {
         Some(_) if (1..=31).contains(&day_n) => Some(day_n),
@@ -250,10 +267,11 @@ mod tests {
         // Strictly-future years are placeholders, not real events.
         assert_eq!(parse_lb_date("01.01.2027", NOW), None);
         assert_eq!(parse_lb_date("31.12.3000", NOW), None);
-        // The current year is a legitimate recent date.
+        // The current year is a legitimate recent date (a non-`01.01` day, so
+        // the New Year's Day year-only fold does not muddy the future guard).
         assert_eq!(
-            parse_lb_date("01.01.2026", NOW),
-            Some(exact(2026, Some(1), Some(1)))
+            parse_lb_date("15.06.2026", NOW),
+            Some(exact(2026, Some(6), Some(15)))
         );
         // A past modern year that is *not* a listed sentinel still parses — the
         // guard only rejects the future, and `2022` is neither future nor listed.
@@ -290,6 +308,30 @@ mod tests {
         assert_eq!(
             parse_lb_date("00.05.1790", NOW),
             Some(exact(1790, Some(5), None))
+        );
+    }
+
+    #[test]
+    fn a_bare_first_of_january_folds_to_a_year_only_date() {
+        // LB pads an unknown day/month to `01.01.YYYY`, so a literal 1 January
+        // carries only the year — it must not import as a precise New Year's Day.
+        assert_eq!(
+            parse_lb_date("01.01.1790", NOW),
+            Some(exact(1790, None, None))
+        );
+        assert_eq!(
+            parse_lb_date(" 01.01.1820 ", NOW),
+            Some(exact(1820, None, None))
+        );
+        // The fold is exactly `01.01`: another January day, or the 1st of another
+        // month, keeps full day-level precision.
+        assert_eq!(
+            parse_lb_date("02.01.1790", NOW),
+            Some(exact(1790, Some(1), Some(2)))
+        );
+        assert_eq!(
+            parse_lb_date("01.03.1790", NOW),
+            Some(exact(1790, Some(3), Some(1)))
         );
     }
 
