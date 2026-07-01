@@ -162,6 +162,13 @@
       <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.18" />
       </filter>
+      <!-- The raised shadow a card lifts to on hover — a larger, softer, lower
+           drop that reads as "this card is interactive" (live canvas only; the
+           static export's cards don't lift). The wider region avoids clipping
+           the bigger blur. -->
+      <filter id="card-shadow-hover" x="-40%" y="-40%" width="180%" height="180%">
+        <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.22" />
+      </filter>
     </defs>
     <g transform={`translate(${transform.x} ${transform.y}) scale(${transform.k})`}>
       {#each model.links as link, i (i)}

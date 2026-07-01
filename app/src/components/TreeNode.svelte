@@ -152,16 +152,38 @@
     fill: var(--color-surface);
     stroke: var(--color-hairline);
     stroke-width: 1;
+    /* Smooth the hover cue below (neutralized under prefers-reduced-motion by
+       the global reset). The filter swap itself is discrete — not listed. */
+    transition:
+      stroke var(--motion-fast),
+      stroke-width var(--motion-fast),
+      fill var(--motion-fast);
   }
   /* Focal: a restrained ring distinguishable WITHOUT color alone (weight). */
   .card.focal .bg {
     stroke: var(--tree-focal);
     stroke-width: 2.5;
   }
+  /* Signal that a card is clickable: on hover it lifts (a raised shadow), takes
+     the accent edge that the app's buttons use on hover, and warms a touch —
+     "click to explore this person". A focal card keeps its heavier emphasis
+     ring (the :not(.focal) guard), just gaining the lift + warmth. */
+  .card:hover .bg {
+    fill: color-mix(in srgb, var(--color-surface) 92%, var(--color-accent));
+    filter: url(#card-shadow-hover);
+  }
+  .card:not(.focal):hover .bg {
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+  }
+  .card:hover .name {
+    fill: var(--color-accent-text);
+  }
   .name {
     font-family: var(--font-serif);
     font-size: 1rem;
     fill: var(--color-ink);
+    transition: fill var(--motion-fast);
   }
   .lifespan {
     font-family: var(--font-sans);
