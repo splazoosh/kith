@@ -73,6 +73,25 @@ pub(crate) fn now_timestamp() -> String {
     jiff::Timestamp::now().to_string()
 }
 
+/// The current UTC calendar year (e.g. `2026`), read from the system clock.
+///
+/// Importers use this to reject impossible future dates. Like [`now_timestamp`]
+/// it is a wall-clock read, so any caller that needs determinism must **inject**
+/// the value (parse/format helpers take it as a parameter) rather than call this
+/// on a hot or snapshot-tested path.
+///
+/// # Panics
+/// Panics only if the system clock is set outside jiff's `-9999..=9999` year
+/// range — a broken-environment invariant, not a recoverable error
+/// (`err-expect-bugs-only`).
+pub(crate) fn current_year() -> i32 {
+    i32::from(
+        jiff::Timestamp::now()
+            .to_zoned(jiff::tz::TimeZone::UTC)
+            .year(),
+    )
+}
+
 /// A handle to a Kith database.
 ///
 /// `Store` owns an `r2d2` connection pool and is cheap to clone (the pool is

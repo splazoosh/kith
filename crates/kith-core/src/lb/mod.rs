@@ -9,10 +9,19 @@
 //!   each spouse pointer a couple family (deduped against the parent families).
 //!   The redundant `Children` array (a back-reference to these same links) is
 //!   ignored — parentage is taken from each child's `FatherId`/`MotherId`.
-//! - **The unknown-date sentinel is dropped.** `01.01.1753` (SQL Server's
-//!   `datetime` minimum — the source's "unset" default) maps to *no date*, so an
-//!   import does not invent a flood of false 1753 births. A birthplace with no
-//!   real date still yields a place-only birth event.
+//! - **Unset-date sentinels and future dates are dropped.** `01.01.1753` (SQL
+//!   Server's `datetime` minimum) and `05.01.2021` (the source's fixed export-run
+//!   stamp) are both "unset" defaults that map to *no date*; so does any date
+//!   whose year is in the future (past the import year). An import therefore
+//!   invents neither a flood of false 1753 births nor bogus modern ones. A
+//!   birthplace with no real date still yields a place-only birth event.
+//! - **An impossible birth is dropped.** A birth that falls *after* the death is
+//!   a stray export stamp that slipped past the sentinel list; it is discarded so
+//!   the trustworthy historical death survives (`record::reconcile_birth`).
+//! - **The living flag is inferred, not read.** LB has no alive/deceased field,
+//!   so `living` is derived from the reconciled facts: any death evidence (a real
+//!   death date or a death place), or no plausibly-recent birth, ⇒ deceased; a
+//!   recent birth with no death ⇒ living (`record::infer_living`).
 //! - **Atomicity** — parse + validate fully, then write in ONE transaction; a
 //!   malformed file writes nothing.
 //! - **Clear failure, never a panic** — malformed JSON, a zero/duplicate id, or a
@@ -38,7 +47,8 @@ use record::LbPerson;
 ///
 /// Relationships are reconstructed into Kith's family model: children sharing a
 /// `(FatherId, MotherId)` pair join one family; spouse pointers form couple
-/// families (deduped). The `01.01.1753` unknown-date sentinel becomes no date.
+/// families (deduped). The unset-date sentinels (`01.01.1753`, `05.01.2021`) and
+/// any future date become no date.
 ///
 /// # Errors
 /// [`CoreError::Validation`] for malformed JSON, a zero/duplicate record id, a

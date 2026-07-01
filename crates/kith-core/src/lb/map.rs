@@ -5,7 +5,7 @@
 //! transaction:
 //!
 //! 1. **individuals** + their birth/death events (a place-only event is created
-//!    when a place is present but the date is the unknown sentinel),
+//!    when a place is present but the date is a sentinel/future placeholder),
 //! 2. **families** synthesized from each distinct `(father, mother)` pair, with
 //!    children linked in input order, and
 //! 3. **couple families** from spouse pointers, deduped against the parent
@@ -16,6 +16,7 @@
 
 use std::collections::{HashMap, HashSet};
 
+use crate::date::GenealogicalDate;
 use crate::db::Store;
 use crate::error::{CoreError, Result};
 use crate::gedcom::{ImportOptions, ImportSummary};
@@ -24,7 +25,7 @@ use crate::model::{
     PersonId, PlaceId, Sex, UnionType,
 };
 
-use super::record::{LbPerson, non_empty, parse_lb_date};
+use super::record::{LbPerson, infer_living, non_empty, parse_lb_date, reconcile_birth};
 
 /// Validate the parsed records without writing: each id must be non-zero and
 /// unique, and every parent/spouse pointer must resolve to a present id. Runs
@@ -87,32 +88,55 @@ pub(super) fn apply(
         ));
     }
 
+    // One wall-clock read for the whole import (injected into the pure date
+    // parser so a future date can be rejected without making parsing itself
+    // clock-dependent).
+    let current_year = crate::db::current_year();
+
     store.transaction(|conn| {
         let mut summary = ImportSummary::default();
         let mut id_map: HashMap<i64, PersonId> = HashMap::with_capacity(people.len());
         let mut places: HashMap<String, PlaceId> = HashMap::new();
 
-        // PASS 1 — individuals + their birth/death events.
+        // PASS 1 — individuals + their birth/death events. Parse both vital
+        // dates once, drop a birth that falls after the death (a stray export
+        // stamp — see `reconcile_birth`), then infer the living flag from the
+        // resulting facts before writing the person.
         for p in people {
-            let ind = Store::create_individual_in(conn, &individual_draft(p))?;
+            let death = parse_lb_date(&p.death_date, current_year);
+            let birth = reconcile_birth(parse_lb_date(&p.birth_date, current_year), death.as_ref());
+            let has_death_place = non_empty(&p.death_place).is_some();
+
+            let draft = individual_draft(
+                p,
+                birth.as_ref(),
+                death.as_ref(),
+                has_death_place,
+                current_year,
+            );
+            let ind = Store::create_individual_in(conn, &draft)?;
             id_map.insert(p.id, ind.id);
             summary.individuals += 1;
 
             add_vital_event(
                 conn,
                 ind.id,
-                EventKind::Birth,
-                &p.birth_date,
-                &p.birth_place,
+                VitalFact {
+                    kind: EventKind::Birth,
+                    date: birth,
+                    place: &p.birth_place,
+                },
                 &mut places,
                 &mut summary,
             )?;
             add_vital_event(
                 conn,
                 ind.id,
-                EventKind::Death,
-                &p.death_date,
-                &p.death_place,
+                VitalFact {
+                    kind: EventKind::Death,
+                    date: death,
+                    place: &p.death_place,
+                },
                 &mut places,
                 &mut summary,
             )?;
@@ -201,10 +225,17 @@ fn lookup(id_map: &HashMap<i64, PersonId>, lb_id: i64) -> Result<PersonId> {
     })
 }
 
-/// Build a [`NewIndividual`] from an LB record. `living` defaults to `false`
-/// (imported people default to deceased — deterministic, matching the GEDCOM
-/// importer; the privacy flag is the user's to flip afterward).
-fn individual_draft(p: &LbPerson) -> NewIndividual {
+/// Build a [`NewIndividual`] from an LB record. The `living` (privacy) flag is
+/// *inferred* from the reconciled vital facts (LB has no explicit field): a
+/// person with any death evidence, or with no plausibly-recent birth, imports as
+/// deceased; a recent birth with no death reads as living. See [`infer_living`].
+fn individual_draft(
+    p: &LbPerson,
+    birth: Option<&GenealogicalDate>,
+    death: Option<&GenealogicalDate>,
+    has_death_place: bool,
+    current_year: i32,
+) -> NewIndividual {
     NewIndividual {
         given_name: non_empty(&p.first_name),
         surname: non_empty(&p.last_name),
@@ -212,37 +243,46 @@ fn individual_draft(p: &LbPerson) -> NewIndividual {
         name_suffix: None,
         nickname: None,
         sex: p.gender.parse::<Sex>().unwrap_or(Sex::Unknown),
-        living: false,
+        living: infer_living(birth, death, has_death_place, current_year),
         notes: non_empty(&p.notes),
     }
 }
 
-/// Add a birth/death event for `person`, parsing the LB date and resolving the
-/// place (deduped). An event is recorded only when *something* is known — a date
-/// or a place; a bare sentinel/blank with no place adds no information and no row.
+/// One vital fact to import: its kind, its already-parsed date, and the raw LB
+/// place string (grouped so [`add_vital_event`] stays under the argument-count
+/// lint).
+struct VitalFact<'a> {
+    kind: EventKind,
+    date: Option<GenealogicalDate>,
+    place: &'a str,
+}
+
+/// Add a birth/death event for `person` from an already-parsed [`VitalFact`],
+/// resolving the place (deduped). An event is recorded only when *something* is
+/// known — a date or a place; a bare sentinel/blank/future placeholder with no
+/// place adds no information and no row. The date is parsed by the caller (once
+/// per person) so the living inference and the birth/death reconciliation can
+/// share it.
 fn add_vital_event(
     conn: &rusqlite::Connection,
     person: PersonId,
-    kind: EventKind,
-    date_str: &str,
-    place_str: &str,
+    fact: VitalFact<'_>,
     places: &mut HashMap<String, PlaceId>,
     summary: &mut ImportSummary,
 ) -> Result<()> {
-    let date = parse_lb_date(date_str);
-    let place = match non_empty(place_str) {
+    let place = match non_empty(fact.place) {
         Some(name) => Some(place_id_for(conn, places, &name, summary)?),
         None => None,
     };
-    if date.is_none() && place.is_none() {
+    if fact.date.is_none() && place.is_none() {
         return Ok(());
     }
     Store::add_event_in(
         conn,
         &NewEvent {
             subject: EventSubject::Individual(person),
-            kind,
-            date,
+            kind: fact.kind,
+            date: fact.date,
             place,
             notes: None,
         },

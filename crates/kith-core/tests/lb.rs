@@ -1,5 +1,7 @@
 //! Integration coverage for the LB JSON importer: family synthesis from parent
-//! pointers, the `01.01.1753` unknown-date sentinel, place dedup + place-only
+//! pointers, the unset-date sentinels (`01.01.1753`, `05.01.2021`) and the
+//! future-date guard, the born-after-death birth drop, the inferred living flag
+//! (recent birth vs. death-date/death-place evidence), place dedup + place-only
 //! events, symmetric spouse-pair dedup, merge/non-merge semantics, the
 //! atomic-failure paths, and a real-world whole-file import.
 
@@ -61,7 +63,7 @@ fn fields_map_onto_the_individual() {
     let hans = person(&store, "Hans", "Olsen");
     assert_eq!(hans.sex, Sex::Male);
     assert_eq!(hans.notes.as_deref(), Some("Patriark."));
-    // Imported people default to deceased (privacy flag is the user's to flip).
+    // Hans has a real death date (1890) → deceased.
     assert!(!hans.living);
     assert_eq!(person(&store, "Marta", "Nilsdatter").sex, Sex::Female);
 }
@@ -134,6 +136,97 @@ fn the_unknown_date_sentinel_creates_no_event() {
             .iter()
             .all(|e| e.date.is_some() && e.place.is_some())
     );
+}
+
+#[test]
+fn the_export_default_stamp_and_future_dates_create_no_event() {
+    // Neither the fixed `05.01.2021` export-run stamp (a birth) nor a far-future
+    // date (a death) is a real event, and with no place there is nothing to
+    // anchor a place-only event to → the person imports with zero events.
+    let store = Store::open_in_memory().expect("open store");
+    let json = r#"[
+      {"Id":1,"Gender":"M","FirstName":"Ex","LastName":"Port",
+       "BirthDate":"05.01.2021","DeathDate":"01.01.3000"}
+    ]"#;
+    let summary = lb::import(&store, json, &ImportOptions::default()).expect("import");
+    assert_eq!(summary.individuals, 1);
+    assert_eq!(summary.events, 0, "sentinel + future dates yield no events");
+    let person = &store.list_individuals().expect("list")[0];
+    assert!(
+        store
+            .list_events_for(EventSubject::Individual(person.id))
+            .expect("events")
+            .is_empty()
+    );
+}
+
+#[test]
+fn a_recent_birth_without_a_death_is_inferred_living() {
+    // No death evidence and a birth well within a human lifespan → living (so the
+    // person is redacted from exports), unlike the undated ancestors that default
+    // to deceased. 2020 stays inside the 110-year window for the app's lifetime.
+    let store = Store::open_in_memory().expect("open store");
+    let json = r#"[
+      {"Id":1,"Gender":"F","FirstName":"Nyleg","LastName":"Levande",
+       "BirthDate":"01.01.2020","DeathDate":""}
+    ]"#;
+    lb::import(&store, json, &ImportOptions::default()).expect("import");
+    let person = &store.list_individuals().expect("list")[0];
+    assert!(
+        person.living,
+        "a recent birth with no death evidence should read as living"
+    );
+}
+
+#[test]
+fn a_death_place_without_a_death_date_still_reads_deceased() {
+    // A recent birth but a recorded place of death (with only a sentinel death
+    // date) → the death place is death evidence, so the person is deceased —
+    // never wrongly flipped to living by the recent birth.
+    let store = Store::open_in_memory().expect("open store");
+    let json = r#"[
+      {"Id":1,"Gender":"M","FirstName":"Dod","LastName":"Stad",
+       "BirthDate":"01.01.2020","DeathDate":"01.01.1753","DeathPlace":"Bergen"}
+    ]"#;
+    lb::import(&store, json, &ImportOptions::default()).expect("import");
+    let person = &store.list_individuals().expect("list")[0];
+    assert!(
+        !person.living,
+        "a recorded death place is death evidence → deceased"
+    );
+    // The place-only death event is still created.
+    let events = store
+        .list_events_for(EventSubject::Individual(person.id))
+        .expect("events");
+    assert!(
+        events
+            .iter()
+            .any(|e| e.kind == EventKind::Death && e.place.is_some())
+    );
+}
+
+#[test]
+fn a_birth_after_the_death_is_dropped_keeping_the_death() {
+    // A stray modern export stamp in the birth field (2022) beside a real
+    // historical death (1787): the impossible birth is discarded, the death is
+    // kept, and the person reads as deceased.
+    let store = Store::open_in_memory().expect("open store");
+    let json = r#"[
+      {"Id":1,"Gender":"M","FirstName":"Herman","LastName":"Skomo",
+       "BirthPlace":"","BirthDate":"01.01.2022","DeathDate":"01.01.1787"}
+    ]"#;
+    lb::import(&store, json, &ImportOptions::default()).expect("import");
+    let person = &store.list_individuals().expect("list")[0];
+    assert!(!person.living, "a person with a real death is deceased");
+
+    // The birth stamp carried no place, so dropping its date leaves no birth
+    // event — only the death survives, with its real date.
+    let events = store
+        .list_events_for(EventSubject::Individual(person.id))
+        .expect("events");
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].kind, EventKind::Death);
+    assert!(events[0].date.is_some());
 }
 
 #[test]
