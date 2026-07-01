@@ -43,6 +43,19 @@ fn merge_opts(merge: bool) -> ImportOptions {
     o
 }
 
+/// Export the store, normalizing the HEAD's crate-version line so a version
+/// bump doesn't churn the snapshots. The writer emits the crate version as
+/// `2 VERS {CARGO_PKG_VERSION}` under `1 SOUR Kith`; only that line is rewritten
+/// to `[VERSION]`. The GEDCOM spec version (`2 VERS 5.5.1` under `1 GEDC`) is
+/// left intact, so the snapshot still pins it. Byte-stability across a round
+/// trip is proven separately and is version-agnostic already.
+fn export_snapshot(s: &Store) -> String {
+    export(s).expect("export").replace(
+        &format!("1 SOUR Kith\n2 VERS {}\n", env!("CARGO_PKG_VERSION")),
+        "1 SOUR Kith\n2 VERS [VERSION]\n",
+    )
+}
+
 #[test]
 fn import_export_import_is_byte_stable() {
     // Arrange — import the corpus into a fresh store and export it once.
@@ -87,7 +100,7 @@ fn every_corpus_fixture_round_trips_byte_stably() {
 fn export_of_nuclear_matches_snapshot() {
     let s = fresh();
     import(&s, NUCLEAR, &merge_opts(false)).expect("import");
-    insta::assert_snapshot!("nuclear_export", export(&s).expect("export"));
+    insta::assert_snapshot!("nuclear_export", export_snapshot(&s));
 }
 
 #[test]
@@ -170,7 +183,7 @@ fn sources_and_citations_map_to_their_subjects_and_round_trip() {
 fn export_of_sources_matches_snapshot() {
     let s = fresh();
     import(&s, SOURCES, &merge_opts(false)).expect("import");
-    insta::assert_snapshot!("sources_export", export(&s).expect("export"));
+    insta::assert_snapshot!("sources_export", export_snapshot(&s));
 }
 
 #[test]

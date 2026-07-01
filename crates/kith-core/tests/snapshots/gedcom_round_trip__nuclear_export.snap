@@ -1,10 +1,10 @@
 ---
 source: crates/kith-core/tests/gedcom_round_trip.rs
-expression: "export(&s).expect(\"export\")"
+expression: export_snapshot(&s)
 ---
 0 HEAD
 1 SOUR Kith
-2 VERS 1.0.1
+2 VERS [VERSION]
 2 NAME Kith
 1 GEDC
 2 VERS 5.5.1
