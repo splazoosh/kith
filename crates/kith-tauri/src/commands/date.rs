@@ -39,6 +39,17 @@ pub async fn parse_date(input: String) -> Result<DatePreview, CommandError> {
     })
 }
 
+/// Formats a parsed genealogical date back into an editable raw string — the
+/// inverse of [`parse_date`], used to seed the date field when editing an
+/// existing record. Returns the long human form (`about 1850`, `12 Mar 1887`,
+/// `between 1850 and 1860`), which re-parses to the same date, so a re-save is
+/// lossless. Infallible: formatting a valid date cannot fail, and the date
+/// subsystem's `proptest` suite proves `parse(format(d)) == d`.
+#[tauri::command]
+pub fn format_date(date: GenealogicalDate) -> String {
+    date.to_string()
+}
+
 /// Parses an optional raw date string into the typed core date, mapping a parse
 /// failure to a `validation` [`CommandError`]. `None` (and only `None`) yields
 /// no date — a present-but-blank string is a validation error, as in the CLI.
@@ -51,5 +62,30 @@ pub(crate) fn parse_opt_date(
     match input {
         Some(s) => Ok(Some(s.parse::<GenealogicalDate>()?)),
         None => Ok(None),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn format_date_produces_a_re_parseable_edit_seed() {
+        // The command seeds the edit form; its output must re-parse to the same
+        // date so a re-save is lossless.
+        for input in ["ABT 1850", "12 Mar 1887", "BET 1850 AND 1860"] {
+            let date: GenealogicalDate = input.parse().expect("parse");
+            let seed = format_date(date);
+            assert_eq!(
+                seed.parse::<GenealogicalDate>().expect("re-parse seed"),
+                date,
+                "format_date({input:?}) must round-trip"
+            );
+        }
+        // The seed is the long human form, not the GEDCOM token form.
+        assert_eq!(
+            format_date("ABT 1850".parse().expect("parse")),
+            "about 1850"
+        );
     }
 }

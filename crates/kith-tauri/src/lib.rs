@@ -80,6 +80,7 @@ pub fn run() {
             commands::name::name_list,
             commands::name::name_remove,
             commands::date::parse_date,
+            commands::date::format_date,
             commands::layout::compute_layout,
             commands::export::export_html,
             commands::gedcom::export_gedcom,

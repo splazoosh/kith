@@ -27,6 +27,7 @@ import type {
   Family,
   FamilyView,
   GedcomImport,
+  GenealogicalDate,
   Individual,
   LayoutModel,
   LbImport,
@@ -116,6 +117,10 @@ export const nameList = (individualId: number) =>
 export const nameRemove = (id: number) => call<void>("name_remove", { id });
 export const parseDate = (input: string) =>
   call<DatePreview>("parse_date", { input });
+/** Format a parsed date back to an editable raw string (the inverse of
+ *  `parseDate`) — seeds the date field when editing an existing event. */
+export const formatDate = (date: GenealogicalDate) =>
+  call<string>("format_date", { date });
 
 // — layout (the positioned chart; the canvas renders it, the controls drive it).
 //   root/mode/generations are single-token params, so the camelCase arg keys

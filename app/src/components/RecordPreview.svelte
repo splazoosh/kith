@@ -31,20 +31,31 @@
   let confirming = $state<"person" | "family" | null>(null);
   // The event whose citations editor is open (one at a time); events-only.
   let citingEvent = $state<number | null>(null);
+  // The event being edited in place (one at a time), mutually exclusive with the
+  // citations editor and the add-event form.
+  let editingEvent = $state<number | null>(null);
 
   // Reset the transient detail UI whenever the selected record changes (which
-  // includes the in-place reselect after a sub-editor write — so the add-event
-  // form closes once its event lands).
+  // includes the in-place reselect after a sub-editor write — so the add/edit
+  // event form closes once its event lands).
   $effect(() => {
     selection.current?.kind;
     selection.current?.id;
     addingEvent = false;
     confirming = null;
     citingEvent = null;
+    editingEvent = null;
   });
 
   function toggleCiting(id: number): void {
+    editingEvent = null;
     citingEvent = citingEvent === id ? null : id;
+  }
+
+  function startEditEvent(id: number): void {
+    addingEvent = false;
+    citingEvent = null;
+    editingEvent = id;
   }
 
   function familyTitle(v: FamilyView): string {
@@ -76,9 +87,10 @@
     selection.endEdit();
   }
 
-  // — events (add + remove; edit is remove-and-re-add, see EventEditor) —
+  // — events (add / edit in place / remove) —
   async function onEventSaved(): Promise<void> {
     addingEvent = false;
+    editingEvent = null;
     await selection.reselect();
   }
 
@@ -196,6 +208,9 @@
               <div class="ev-row">
                 <span class="ev-kind">{eventKindLabel(ev.kind)}</span>
                 {#if dateYear(ev.date)}<span class="ev-year">{dateYear(ev.date)}</span>{/if}
+                <button type="button" class="link" onclick={() => startEditEvent(ev.id)}>
+                  Edit
+                </button>
                 <button
                   type="button"
                   class="link"
@@ -212,7 +227,14 @@
                   Remove
                 </button>
               </div>
-              {#if citingEvent === ev.id}
+              {#if editingEvent === ev.id}
+                <EventEditor
+                  subject={ev.subject}
+                  editId={ev.id}
+                  onsaved={onEventSaved}
+                  oncancel={() => (editingEvent = null)}
+                />
+              {:else if citingEvent === ev.id}
                 <CitationsEditor subject={{ Event: ev.id }} />
               {/if}
             </li>
@@ -286,6 +308,9 @@
               <div class="ev-row">
                 <span class="ev-kind">{eventKindLabel(ev.kind)}</span>
                 {#if dateYear(ev.date)}<span class="ev-year">{dateYear(ev.date)}</span>{/if}
+                <button type="button" class="link" onclick={() => startEditEvent(ev.id)}>
+                  Edit
+                </button>
                 <button
                   type="button"
                   class="link"
@@ -302,7 +327,14 @@
                   Remove
                 </button>
               </div>
-              {#if citingEvent === ev.id}
+              {#if editingEvent === ev.id}
+                <EventEditor
+                  subject={ev.subject}
+                  editId={ev.id}
+                  onsaved={onEventSaved}
+                  oncancel={() => (editingEvent = null)}
+                />
+              {:else if citingEvent === ev.id}
                 <CitationsEditor subject={{ Event: ev.id }} />
               {/if}
             </li>
