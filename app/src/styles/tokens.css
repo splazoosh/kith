@@ -30,14 +30,18 @@
   --color-danger: #8c3b32;
   --color-danger-weak: #f6e3df;
 
-  /* type — serif for names, grotesque/sans for UI & metadata */
+  /* type — serif for names, grotesque/sans for UI & metadata.
+     The scale is sized for comfortable legibility: an 18px body base with a
+     14px floor, so no interface text drops to an eye-straining size. (px at a
+     16px root: 14 / 16 / 18 / 22 / 32.) The tree canvas labels are sized
+     separately in TreeNode/render::svg — box-fitted, not from this scale. */
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-sans: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.75rem;
+  --text-xs: 0.875rem;
+  --text-sm: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: 2rem;
   --leading-tight: 1.2;
   --leading-normal: 1.5;
 
