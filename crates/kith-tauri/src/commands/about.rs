@@ -73,9 +73,10 @@ mod tests {
 
         assert_eq!(info.name, "Kith");
         assert_eq!(info.identifier, "net.splazoosh.kith");
-        // One source of truth: the workspace version flows here verbatim.
+        // One source of truth: the workspace version flows here verbatim. Assert
+        // against CARGO_PKG_VERSION, not a hardcoded literal, so a version bump
+        // doesn't break this test.
         assert_eq!(info.version, env!("CARGO_PKG_VERSION"));
-        assert_eq!(info.version, "1.0.0");
         assert_eq!(info.license, "MIT");
         assert!(!info.authors.is_empty(), "authors should be populated");
     }

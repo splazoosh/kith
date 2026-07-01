@@ -329,7 +329,13 @@ fn the_reference_file_imports_deterministically() {
     // The maintainer's real LB export lives in docs/. Resolve it relative to the
     // crate manifest so the test is CWD-independent.
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/Persons5.json");
-    let source = std::fs::read_to_string(&path).expect("read docs/Persons5.json");
+    // The file is gitignored (private data), so it is absent in CI and fresh
+    // checkouts. Run the full determinism check where it is present; skip cleanly
+    // where it is not, rather than failing on a fixture that cannot be shipped.
+    let Ok(source) = std::fs::read_to_string(&path) else {
+        eprintln!("skipping: {} not present", path.display());
+        return;
+    };
 
     let store = Store::open_in_memory().expect("open store");
     let summary = lb::import(&store, &source, &ImportOptions::default()).expect("import reference");
