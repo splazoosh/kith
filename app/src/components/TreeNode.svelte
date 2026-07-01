@@ -1,18 +1,28 @@
 <script lang="ts">
   // TreeNode — one positioned node at its OWN model box. Person: a clipped,
-  // shadowed card that re-roots on click/Enter — role=button, tabindex,
-  // a focus-visible ring; a quiet per-sex edge + restrained focal ring.
-  // Union: a small inert joiner. Names are real <text> (a11y + export
-  // parity). No layout math.
+  // shadowed card. A SINGLE click (or Enter/Space) inspects — it opens the read-
+  // only detail popover; a DOUBLE click re-roots the chart (the fast-navigation
+  // path). role=button, tabindex, a focus-visible ring; a quiet per-sex edge +
+  // restrained focal ring. Union: a small inert joiner. Names are real <text>
+  // (a11y + export parity). No layout math.
   import type { LayoutNode } from "../lib/types";
 
   interface Props {
     node: LayoutNode;
     /** Resolved asset URL of this person's portrait, or null. */
     portraitUrl?: string | null;
+    /** Re-root the chart on this person (double-click / the popover's Center action). */
     onreroot: (personId: number) => void;
+    /** Inspect this person (single-click / Enter / Space): open the detail popover.
+     *  Receives the person id plus this node's rendered <g> for the popover anchor. */
+    oninspect?: (personId: number, groupEl: SVGGElement) => void;
   }
-  let { node, portraitUrl = null, onreroot }: Props = $props();
+  let { node, portraitUrl = null, onreroot, oninspect }: Props = $props();
+
+  // The single-vs-double-click disambiguation window (~a platform double-click).
+  // A single click waits this long so a double-click (two clicks first) can cancel
+  // it and re-root instead of also flashing the popover.
+  const DBL_MS = 220;
 
   // Portrait avatar geometry, mirroring the HTML exporter's metrics so the live
   // canvas and the exported file match (PORTRAIT_D / PORTRAIT_INSET). The card
@@ -32,27 +42,61 @@
   const label = (c: NonNullable<LayoutNode["content"]>): string =>
     c.lifespan ? `${c.display_name} (${c.lifespan})` : c.display_name;
 
-  // Person nodes carry { Person: id }; unions are inert and never reach this path.
-  function activate(): void {
-    if (node.kind === "Person" && "Person" in node.entity) onreroot(node.entity.Person);
+  // The rendered <g>, handed to `oninspect` so the host can anchor the popover.
+  let groupEl = $state<SVGGElement | null>(null);
+  let clickTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** This node's person id, or null for a union (which never reaches these handlers). */
+  function personId(): number | null {
+    return node.kind === "Person" && "Person" in node.entity ? node.entity.Person : null;
+  }
+
+  function inspect(): void {
+    const id = personId();
+    if (id !== null && groupEl !== null) oninspect?.(id, groupEl);
+  }
+  function reroot(): void {
+    const id = personId();
+    if (id !== null) onreroot(id);
+  }
+
+  // Single click inspects — but debounced so a double-click (two clicks first)
+  // cancels it and re-roots instead of also flashing the popover.
+  function onclick(): void {
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => {
+      clickTimer = undefined;
+      inspect();
+    }, DBL_MS);
+  }
+  function ondblclick(): void {
+    clearTimeout(clickTimer);
+    clickTimer = undefined;
+    reroot();
   }
   function onkeydown(e: KeyboardEvent): void {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      activate();
+      inspect(); // keyboard has no "double" — re-root is the popover's Center action
     }
   }
+
+  // A late timer after the nodes were replaced (a re-root) would inspect a stale
+  // id — clear it on unmount.
+  $effect(() => () => clearTimeout(clickTimer));
 </script>
 
 {#if node.kind === "Person" && node.content}
   <g
+    bind:this={groupEl}
     class="card"
     class:focal={node.focal}
     transform={`translate(${node.x} ${node.y})`}
     role="button"
     tabindex="0"
-    aria-label={`Re-root on ${label(node.content)}`}
-    onclick={activate}
+    aria-label={`Show details for ${label(node.content)}`}
+    {onclick}
+    {ondblclick}
     {onkeydown}
   >
     <title>{label(node.content)}</title>

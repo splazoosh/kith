@@ -1,14 +1,16 @@
 // TreeCanvas.test.ts — jsdom render of a hand-built model. The d3-zoom action is
-// mocked so no transition/`select` runs
-// under jsdom; the test asserts the canvas renders the model VERBATIM — one card
-// <g> per person at its own (x, y) sized to its own (width, height) (never a
-// hardcoded 220×72), the name + lifespan as real <text>, a <title> per card,
-// the viewBox derived from bounds, and one link stroke through the anchors
-// rounded over the SAME points. A person card click re-roots
-// on its entity id; a union is inert.
+// mocked so no transition/`select` runs under jsdom, and the nodeDetail store is
+// mocked so the popover host stays inert (target null) and node interaction is
+// observed via its `open` spy. The test asserts the canvas renders the model
+// VERBATIM — one card <g> per person at its own (x, y) sized to its own
+// (width, height) (never a hardcoded 220×72), the name + lifespan as real
+// <text>, a <title> per card, the viewBox derived from bounds, and one link
+// stroke through the anchors rounded over the SAME points. Per the detail-popover
+// contract, a SINGLE click (or Enter/Space) INSPECTS (opens the popover) and a
+// DOUBLE click re-roots; a union is inert.
 
 import { render } from "@testing-library/svelte";
-import { expect, test, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 
 // Mock the d3 seam: a no-op action keeps d3/transition out of jsdom.
 vi.mock("../lib/actions/zoom", () => ({
@@ -16,11 +18,23 @@ vi.mock("../lib/actions/zoom", () => ({
   prefersReducedMotion: vi.fn(() => false),
 }));
 
+// Mock the nodeDetail store: `open`/`close` are spies and `target` stays null, so
+// the popover never mounts and its interactions are observed via the spies.
+vi.mock("../lib/stores/nodeDetail.svelte", () => ({
+  nodeDetail: { target: null, view: null, loading: false, open: vi.fn(), close: vi.fn() },
+}));
+
+import { nodeDetail } from "../lib/stores/nodeDetail.svelte";
 import type { LayoutModel } from "../lib/types";
 import { roundedPathFromAnchors, viewBoxFor } from "../lib/viewport";
 import TreeCanvas from "./TreeCanvas.svelte";
 
 const noop = (): void => {};
+
+beforeEach(() => {
+  vi.mocked(nodeDetail.open).mockReset();
+  vi.mocked(nodeDetail.close).mockReset();
+});
 
 // Distinctive box sizes (200×80, NOT 220×72) prove the card reads its own model
 // box rather than any hardcoded constant.
@@ -118,14 +132,40 @@ test("the <svg> is role=group (not img) so its focusable nodes reach AT", () => 
   expect(svg?.getAttribute("role")).toBe("group");
 });
 
-test("clicking a person card calls onreroot with its entity person id", () => {
+test("a SINGLE click inspects (opens the popover) and does NOT re-root", () => {
+  vi.useFakeTimers();
   const onreroot = vi.fn();
   const { container } = render(TreeCanvas, { props: { model, onreroot } });
 
   (container.querySelector("g.card") as SVGGElement).dispatchEvent(
     new MouseEvent("click", { bubbles: true }),
   );
-  expect(onreroot).toHaveBeenCalledWith(1); // model node 0's entity is { Person: 1 }
+  vi.advanceTimersByTime(250); // past the double-click disambiguation window
+  expect(nodeDetail.open).toHaveBeenCalledWith(1); // model node 0's entity is { Person: 1 }
+  expect(onreroot).not.toHaveBeenCalled();
+  vi.useRealTimers();
+});
+
+test("a DOUBLE click re-roots and cancels the pending inspect", () => {
+  vi.useFakeTimers();
+  const onreroot = vi.fn();
+  const { container } = render(TreeCanvas, { props: { model, onreroot } });
+  const card = container.querySelector("g.card") as SVGGElement;
+
+  card.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  card.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+  vi.advanceTimersByTime(250);
+  expect(onreroot).toHaveBeenCalledWith(1);
+  expect(nodeDetail.open).not.toHaveBeenCalled(); // the single-click timer was cancelled
+  vi.useRealTimers();
+});
+
+test("Enter inspects immediately (keyboard has no double-click)", () => {
+  const { container } = render(TreeCanvas, { props: { model, onreroot: noop } });
+  (container.querySelector("g.card") as SVGGElement).dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  expect(nodeDetail.open).toHaveBeenCalledWith(1);
 });
 
 test("swapping the model (a mode switch) re-frames the viewBox and re-positions nodes", async () => {

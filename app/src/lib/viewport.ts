@@ -66,3 +66,47 @@ function trimToward(from: Point, to: Point, dist: number): Point {
   const t = Math.min(dist, len / 2) / len;
   return { x: from.x + dx * t, y: from.y + dy * t };
 }
+
+/** A screen rectangle (container-relative px) — the detail popover's placement input. */
+export interface Box {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Position a popover of `size` beside `anchor`, kept inside `container`. Every
+ * rect is in the SAME coordinate space (container-relative px, so `anchor` is the
+ * node's `getBoundingClientRect` minus the container's origin). Prefers the right
+ * of the anchor; flips left when the right would overflow; aligns the popover's
+ * top to the anchor's top, then clamps both axes inside the container so a corner
+ * card never pushes it off-screen. Returns container-relative `{ left, top }`.
+ *
+ * This is pure screen-rect arithmetic — deliberately NO model/viewBox/transform
+ * math (that stays in the core; a tooltip anchor is interaction chrome, not
+ * layout). The reader takes the anchor rect from the rendered DOM.
+ */
+export function placeFor(
+  anchor: Box,
+  size: { width: number; height: number },
+  container: Box,
+  gap = 8,
+): { left: number; top: number } {
+  const rightEdge = anchor.left + anchor.width;
+  // Prefer the right of the anchor; flip left if it would overflow the container.
+  let left = rightEdge + gap;
+  if (left + size.width > container.width) {
+    left = anchor.left - gap - size.width;
+  }
+  // Clamp both axes so a card near an edge/corner never pushes it off-screen.
+  return {
+    left: clamp(left, 0, Math.max(0, container.width - size.width)),
+    top: clamp(anchor.top, 0, Math.max(0, container.height - size.height)),
+  };
+}
+
+/** Clamp `value` into the inclusive `[min, max]` range. */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}

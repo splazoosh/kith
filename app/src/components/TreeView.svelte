@@ -6,6 +6,9 @@
   import { treeFit } from "../lib/shortcuts.svelte";
   import { chart } from "../lib/stores/chart.svelte";
   import { media } from "../lib/stores/media.svelte";
+  import { nodeDetail } from "../lib/stores/nodeDetail.svelte";
+  import { selection } from "../lib/stores/selection.svelte";
+  import { ui } from "../lib/stores/ui.svelte";
   import type { ChartMode, LayoutModel } from "../lib/types";
   import EmptyState from "./EmptyState.svelte";
   import ExportDialog from "./ExportDialog.svelte";
@@ -37,6 +40,16 @@
   $effect(() => {
     void chart.model;
     void media.resolvePortraits(chart.model);
+  });
+
+  // Close the node-detail popover whenever the model reloads (re-root / mode /
+  // depth / DB clear all replace chart.model — its target may leave the graph)
+  // and when the Tree view unmounts (a stale popover mustn't survive a view
+  // switch or DB close). One effect: the cleanup runs before each re-run AND on
+  // destroy; opening the popover doesn't touch chart.model, so it stays put.
+  $effect(() => {
+    void chart.model;
+    return () => nodeDetail.close();
   });
 
   /** The focal node's display name, for the export dialog + the default filename. */
@@ -101,6 +114,10 @@
         model={chart.model}
         portraitUrls={media.portraitUrls}
         onreroot={(id) => chart.reroot(id)}
+        onopenlibrary={(id) => {
+          ui.showLibrary();
+          void selection.selectPerson(id);
+        }}
         {onready}
       />
       {#if chart.loading}

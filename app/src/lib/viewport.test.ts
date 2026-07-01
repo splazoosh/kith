@@ -6,7 +6,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 
 import { prefersReducedMotion } from "./actions/zoom";
-import { pathFromAnchors, roundedPathFromAnchors, viewBoxFor } from "./viewport";
+import { pathFromAnchors, placeFor, roundedPathFromAnchors, viewBoxFor } from "./viewport";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -55,6 +55,47 @@ test("roundedPathFromAnchors clamps the trim to half a short segment", () => {
 
 test("roundedPathFromAnchors yields an empty path for no anchors", () => {
   expect(roundedPathFromAnchors([], 10)).toBe("");
+});
+
+// — placeFor: the pure detail-popover placement (right / flip-left / clamp). All
+//   rects are container-relative px; the container origin is (0, 0). —
+const container = { left: 0, top: 0, width: 800, height: 600 };
+
+test("placeFor puts the popover to the right of the anchor when there is room", () => {
+  const anchor = { left: 100, top: 50, width: 200, height: 80 };
+  // 100 + 200 + gap(8) = 308; 308 + 240 = 548 ≤ 800 → stays right.
+  expect(placeFor(anchor, { width: 240, height: 300 }, container, 8)).toEqual({
+    left: 308,
+    top: 50,
+  });
+});
+
+test("placeFor flips the popover left when the right edge would overflow", () => {
+  const anchor = { left: 600, top: 50, width: 200, height: 80 };
+  // right = 800 + 8 + 240 = 1048 > 800 → flip: 600 - 8 - 240 = 352.
+  expect(placeFor(anchor, { width: 240, height: 300 }, container, 8)).toEqual({
+    left: 352,
+    top: 50,
+  });
+});
+
+test("placeFor clamps the top up when the anchor sits near the bottom", () => {
+  const anchor = { left: 100, top: 550, width: 200, height: 80 };
+  // top 550 + 300 = 850 > 600 → clamp to 600 - 300 = 300.
+  expect(placeFor(anchor, { width: 240, height: 300 }, container, 8).top).toBe(300);
+});
+
+test("placeFor clamps the top to 0 when the popover is taller than the container", () => {
+  const short = { left: 0, top: 0, width: 800, height: 200 };
+  const anchor = { left: 100, top: 400, width: 200, height: 80 };
+  expect(placeFor(anchor, { width: 240, height: 300 }, short, 8).top).toBe(0);
+});
+
+test("placeFor clamps a flip-left that would run off the left edge to 0", () => {
+  const narrow = { left: 0, top: 0, width: 300, height: 600 };
+  const anchor = { left: 120, top: 20, width: 160, height: 80 };
+  // right = 280 + 8 + 260 = 548 > 300 → flip: 120 - 8 - 260 = -148 → clamp to 0.
+  expect(placeFor(anchor, { width: 260, height: 200 }, narrow, 8).left).toBe(0);
 });
 
 test("prefersReducedMotion consults window.matchMedia and returns its match", () => {
